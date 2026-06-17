@@ -71,7 +71,6 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh
 .info.warn{background:#fffbeb;border-color:#fcd34d;color:#92400e}
 .info.err{background:#fff0ee;border-color:#fca5a5;color:#991b1b;display:none}
 .info.err.show{display:block}
-/* API KEY */
 .key-box{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.1rem;margin-bottom:.85rem}
 .key-box h3{font-size:.88rem;font-weight:700;margin-bottom:.4rem}
 .key-box p{font-size:.75rem;color:var(--mu);margin-bottom:.6rem;line-height:1.55}
@@ -80,13 +79,11 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh
 .key-inp:focus{outline:none;border-color:var(--pp)}
 .key-inp.valid{border-color:var(--gd)}
 .cost-strip{background:#F3EAF9;border:1px solid var(--pl);border-radius:6px;padding:.5rem .8rem;font-size:.73rem;color:var(--pt);margin-bottom:.85rem}
-/* FORM */
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.85rem}
 .ff{display:flex;flex-direction:column;gap:.22rem}
 .ff label{font-size:.66rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
-.ff input{height:31px;border:1px solid var(--bdr);border-radius:5px;padding:0 .55rem;font-size:.8rem;font-family:var(--fn);background:var(--sur)}
-.ff input:focus{outline:none;border-color:var(--pp)}
-/* PROGRESS */
+.ff input,.ff select{height:31px;border:1px solid var(--bdr);border-radius:5px;padding:0 .55rem;font-size:.8rem;font-family:var(--fn);background:var(--sur)}
+.ff input:focus,.ff select:focus{outline:none;border-color:var(--pp)}
 .prog{border:1px solid var(--bdr);border-radius:8px;padding:1rem 1.2rem;background:var(--sur);margin-bottom:.85rem}
 .prog-top{display:flex;justify-content:space-between;margin-bottom:.45rem;font-size:.8rem}
 .prog-top span:last-child{font-weight:700;color:var(--pp)}
@@ -110,6 +107,8 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh
 hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
 #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(12px);background:#111;color:#fff;padding:.4rem .85rem;border-radius:6px;font-size:.74rem;opacity:0;transition:all .22s;z-index:9999;pointer-events:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.theme-preview{display:flex;gap:6px;margin-top:.4rem;flex-wrap:wrap}
+.theme-swatch{width:18px;height:18px;border-radius:3px;border:1px solid rgba(0,0,0,.1);display:inline-block}
 @media(max-width:520px){.modes{grid-template-columns:1fr}}
 </style>
 </head>
@@ -143,7 +142,6 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
   <div class="sl">Step 1 — What files do you have for this chapter?</div>
   <h2 style="font-size:1.1rem;margin-bottom:.3rem">Choose input type</h2>
   <p style="font-size:.78rem;color:var(--mu);margin-bottom:1.1rem">Select what you have. The tool adapts to each case.</p>
-
   <div class="modes">
     <div class="mc" id="mc-pdf" onclick="setMode('pdf')">
       <div class="mc-icon">📄</div>
@@ -164,12 +162,10 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       <span class="mc-tag tag-best">Best quality</span>
     </div>
   </div>
-
   <div id="cap-area" style="display:none">
     <div class="sl">What this mode gives you</div>
     <div class="caps" id="caps"></div>
   </div>
-
   <div id="pdf-area" style="display:none">
     <div class="sl">PDF file</div>
     <div class="dz" id="dz-pdf" onclick="document.getElementById('inp-pdf').click()">
@@ -185,7 +181,6 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       <button class="chip-x" onclick="clearF('pdf')">✕</button>
     </div>
   </div>
-
   <div id="idml-area" style="display:none">
     <div class="sl">IDML file</div>
     <div class="dz" id="dz-idml" onclick="document.getElementById('inp-idml').click()">
@@ -201,7 +196,6 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       <button class="chip-x" onclick="clearF('idml')">✕</button>
     </div>
   </div>
-
   <div class="btn-row" style="margin-top:1.3rem">
     <button class="btn pri" id="btn-1" onclick="goStep(2)" disabled>Continue →</button>
   </div>
@@ -213,7 +207,6 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
 <div class="inner">
   <div class="sl">Step 2 — Anthropic API Key</div>
   <h2 style="font-size:1.1rem;margin-bottom:.3rem">Connect Claude AI</h2>
-
   <div id="key-needed-block">
     <div class="info blue">
       <strong>Get your key in 3 minutes:</strong><br>
@@ -222,11 +215,9 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       3. Copy the key (starts with <code style="background:#e8f0fe;padding:1px 4px;border-radius:3px">sk-ant-</code>)<br>
       4. Add ₹500 credit under <strong>Billing</strong> — lasts 40+ chapters
     </div>
-
     <div class="cost-strip">
       💰 <strong>Cost estimate:</strong> &nbsp;10-page chapter ≈ ₹4–8 &nbsp;|&nbsp; 20-page chapter ≈ ₹8–15 &nbsp;|&nbsp; ₹500 credit = ~50 chapters
     </div>
-
     <div class="key-box">
       <h3>🔑 Paste your API key</h3>
       <p>Your key is used only in your browser to call Anthropic's API directly. It is never sent to any other server.</p>
@@ -237,8 +228,6 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       <div class="info err" id="key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>sk-ant-</code></div>
     </div>
   </div>
-
-  <!-- Proxy URL field -->
   <div id="proxy-field" style="margin-bottom:.85rem">
     <div style="font-size:.66rem;font-weight:700;color:#6B6B6B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">
       Cloudflare Proxy URL <span style="font-weight:400;text-transform:none;color:#E87722">⚠ Required — direct API calls are blocked by browsers</span>
@@ -256,13 +245,11 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
       oninput="document.getElementById('proxy-url').style.borderColor=this.value.startsWith('https://')?'#2E7D32':'#DDD0EE'">
     <a href="cloudflare-worker.js" download style="font-size:.73rem;color:#5B2D8E;text-decoration:underline">⬇ Download cloudflare-worker.js</a>
   </div>
-
   <div id="key-skip-block" style="display:none">
     <div class="info green">
       <strong>No API key needed</strong> for IDML-only mode. Text is extracted directly from InDesign. Click Continue.
     </div>
   </div>
-
   <div class="btn-row">
     <button class="btn" onclick="goStep(1)">← Back</button>
     <button class="btn pri" id="btn-2" onclick="goStep(3)">Continue →</button>
@@ -280,12 +267,30 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
   <div class="fgrid">
     <div class="ff" style="grid-column:1/-1">
       <label>Chapter Title</label>
-      <input type="text" id="ch-title" placeholder="e.g. Exploration: Entering the World of Secondary Science">
+      <input type="text" id="ch-title" placeholder="e.g. Resource and Development" oninput="updateThemePreview()">
     </div>
     <div class="ff"><label>Chapter Number</label><input type="number" id="ch-num" value="1" min="1" max="30"></div>
-    <div class="ff"><label>Grade</label><input type="text" id="ch-grade" value="Grade 9"></div>
-    <div class="ff"><label>Subject</label><input type="text" id="ch-subject" value="Science"></div>
-    <div class="ff"><label>Book Title</label><input type="text" id="ch-book" value="Exploration"></div>
+    <div class="ff"><label>Grade</label><input type="text" id="ch-grade" value="Grade 10"></div>
+    <div class="ff">
+      <label>Subject</label>
+      <select id="ch-subject" onchange="updateThemePreview()">
+        <option value="Geography">Geography (Social Science)</option>
+        <option value="Science">Science / Physics / Chemistry / Biology</option>
+        <option value="History">History / Civics / Political Science</option>
+        <option value="Economics">Economics</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="English">English / Language</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="ff"><label>Book Title</label><input type="text" id="ch-book" value="Contemporary India"></div>
+  </div>
+
+  <!-- Theme preview -->
+  <div style="background:#f8f8f8;border:1px solid #e5e7eb;border-radius:7px;padding:.75rem 1rem;margin-bottom:.85rem">
+    <div style="font-size:.66rem;font-weight:700;color:#6B6B6B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Detected colour theme</div>
+    <div id="theme-label" style="font-size:.82rem;font-weight:600;margin-bottom:.35rem">Geography — Cyan & Navy</div>
+    <div class="theme-preview" id="theme-swatches"></div>
   </div>
 
   <div class="btn-row">
@@ -301,23 +306,18 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
   <div class="sl">Step 4 — Converting</div>
   <h2 style="font-size:1.1rem;margin-bottom:.3rem">Conversion in Progress</h2>
   <div id="mode-banner" class="info blue" style="margin-bottom:.85rem"></div>
-
   <div class="prog">
     <div class="prog-top"><span id="pmsg">Initialising…</span><span id="ppct">0%</span></div>
     <div class="prog-track"><div class="prog-bar" id="pbar"></div></div>
     <div class="prog-msg" id="psub"></div>
   </div>
-
   <div class="info err" id="err-box"></div>
-
   <div id="th-area" style="display:none">
     <div class="sl">Pages</div>
     <div class="thumbs" id="thumbs"></div>
   </div>
-
   <div class="sl" id="log-lbl" style="display:none">Log</div>
   <div class="log" id="log"></div>
-
   <div class="btn-row">
     <button class="btn" id="btn-back4" onclick="goStep(3)">← Back</button>
     <button class="btn pri" id="btn-4" onclick="goStep(5)" disabled>View Result →</button>
@@ -347,7 +347,7 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
 </div>
 </div>
 
-</div><!-- /.body -->
+</div>
 <div id="toast"></div>
 
 <script>
@@ -359,6 +359,126 @@ const S = {
   pages:[], colors:{}, styleMap:{}, idmlBlocks:[],
   finalHTML:''
 };
+
+// ══ THEME SYSTEM ══
+// Each theme maps to a subject/content type and defines all CSS variables for the output HTML.
+const THEMES = {
+  geography: {
+    label: 'Geography — Cyan & Navy',
+    swatches: ['#1a3a6b','#00acc1','#e85d04','#f0f8ff','#e8f4f8'],
+    // h1 banner: dark navy bg, white text; h2: cyan; h3: dark blue; callout: light cyan bg
+    vars: {
+      chapterBg1:'#1a3a6b', chapterBg2:'#1e4d8c',   // header gradient
+      chapterText:'#ffffff',
+      h2Color:'#00838f',    h2Border:'#00acc1',
+      h3Color:'#1e4d8c',
+      accentOrange:'#e85d04',
+      bodyBg:'#ffffff',     contentBg:'#f0f8ff',
+      calloutBg:'#e8f4f8',  calloutBorder:'#80deea',
+      calloutHead:'#006064',calloutText:'#01579b',
+      knowledgeBg:'#e1f5fe',knowledgeBorder:'#29b6f6',knowledgeHead:'#0277bd',
+      figCaptionColor:'#e85d04',
+      // question style
+      questionBg:'#e3f2fd', questionBorder:'#1a3a6b',
+      answerColor:'#1a5276',
+      footerColor:'#1a3a6b',
+    }
+  },
+  science: {
+    label: 'Science — Purple & Orange',
+    swatches: ['#5B2D8E','#7B3FA0','#E87722','#F3EAF9','#FDF3E7'],
+    vars: {
+      chapterBg1:'#5B2D8E', chapterBg2:'#7B3FA0',
+      chapterText:'#ffffff',
+      h2Color:'#6B3A9A',    h2Border:'#C8A8DC',
+      h3Color:'#5B2D8E',
+      accentOrange:'#E87722',
+      bodyBg:'#ffffff',     contentBg:'#F8F5FC',
+      calloutBg:'#F3EAF9',  calloutBorder:'#C8A8DC',
+      calloutHead:'#5B2D8E',calloutText:'#2D1A47',
+      knowledgeBg:'#FDF3E7',knowledgeBorder:'#F0C080',knowledgeHead:'#7a4a0e',
+      figCaptionColor:'#E87722',
+      questionBg:'#F3EAF9', questionBorder:'#5B2D8E',
+      answerColor:'#1A5276',
+      footerColor:'#5B2D8E',
+    }
+  },
+  history: {
+    label: 'History / Civics — Brown & Gold',
+    swatches: ['#4e342e','#795548','#f9a825','#fbe9e7','#fff8e1'],
+    vars: {
+      chapterBg1:'#4e342e', chapterBg2:'#6d4c41',
+      chapterText:'#ffffff',
+      h2Color:'#5d4037',    h2Border:'#a1887f',
+      h3Color:'#4e342e',
+      accentOrange:'#f9a825',
+      bodyBg:'#ffffff',     contentBg:'#fbe9e7',
+      calloutBg:'#fff8e1',  calloutBorder:'#ffe082',
+      calloutHead:'#e65100',calloutText:'#4e342e',
+      knowledgeBg:'#fff3e0',knowledgeBorder:'#ffb74d',knowledgeHead:'#e65100',
+      figCaptionColor:'#f9a825',
+      questionBg:'#fff8e1', questionBorder:'#4e342e',
+      answerColor:'#1a237e',
+      footerColor:'#4e342e',
+    }
+  },
+  economics: {
+    label: 'Economics — Teal & Amber',
+    swatches: ['#00695c','#00897b','#ffb300','#e0f2f1','#fff8e1'],
+    vars: {
+      chapterBg1:'#00695c', chapterBg2:'#00897b',
+      chapterText:'#ffffff',
+      h2Color:'#00695c',    h2Border:'#80cbc4',
+      h3Color:'#004d40',
+      accentOrange:'#ffb300',
+      bodyBg:'#ffffff',     contentBg:'#e0f2f1',
+      calloutBg:'#e0f2f1',  calloutBorder:'#80cbc4',
+      calloutHead:'#004d40',calloutText:'#00695c',
+      knowledgeBg:'#fff8e1',knowledgeBorder:'#ffd54f',knowledgeHead:'#f57f17',
+      figCaptionColor:'#ffb300',
+      questionBg:'#e0f2f1', questionBorder:'#00695c',
+      answerColor:'#1a3c34',
+      footerColor:'#00695c',
+    }
+  },
+  default: {
+    label: 'General — Blue & Grey',
+    swatches: ['#1565c0','#1976d2','#f57c00','#e3f2fd','#fff3e0'],
+    vars: {
+      chapterBg1:'#1565c0', chapterBg2:'#1976d2',
+      chapterText:'#ffffff',
+      h2Color:'#1565c0',    h2Border:'#90caf9',
+      h3Color:'#0d47a1',
+      accentOrange:'#f57c00',
+      bodyBg:'#ffffff',     contentBg:'#e3f2fd',
+      calloutBg:'#e3f2fd',  calloutBorder:'#90caf9',
+      calloutHead:'#0d47a1',calloutText:'#1565c0',
+      knowledgeBg:'#fff3e0',knowledgeBorder:'#ffcc80',knowledgeHead:'#e65100',
+      figCaptionColor:'#f57c00',
+      questionBg:'#e3f2fd', questionBorder:'#1565c0',
+      answerColor:'#1a3c6e',
+      footerColor:'#1565c0',
+    }
+  }
+};
+
+function detectTheme(){
+  const subj = document.getElementById('ch-subject').value.toLowerCase();
+  const title = (document.getElementById('ch-title').value||'').toLowerCase();
+  if(/geography|geo|resource|land|soil|water|forest|mineral|agriculture|india.*map/.test(subj+' '+title)) return 'geography';
+  if(/science|physics|chemistry|biology|cell|force|motion|chemical|atom|electric/.test(subj+' '+title)) return 'science';
+  if(/history|civics|political|constitution|democracy|nationalism/.test(subj+' '+title)) return 'history';
+  if(/economics|economic|money|market|development|poverty/.test(subj+' '+title)) return 'economics';
+  return 'default';
+}
+
+function updateThemePreview(){
+  const key = detectTheme();
+  const theme = THEMES[key];
+  document.getElementById('theme-label').textContent = theme.label;
+  document.getElementById('theme-swatches').innerHTML = theme.swatches
+    .map(c=>`<span class="theme-swatch" style="background:${c}" title="${c}"></span>`).join('');
+}
 
 // ── MODE ──
 function setMode(m){
@@ -390,6 +510,19 @@ function setupDrop(dzId,inpId,type){
   dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');handleF(e.dataTransfer.files[0],type)});
   document.getElementById(inpId).addEventListener('change',e=>handleF(e.target.files[0],type));
 }
+
+function filenameToTitle(fname){
+  // Strip extension, leading numbers like "01_" or "01-", then clean separators
+  return fname
+    .replace(/\.[^.]+$/,'')           // remove extension
+    .replace(/^\d+[-_\s]+/,'')        // strip leading "01_" "02-" etc
+    .replace(/[-_]+/g,' ')            // underscores/dashes → spaces
+    .replace(/\s+/g,' ')
+    .trim()
+    // title-case each word
+    .replace(/\b\w/g,c=>c.toUpperCase());
+}
+
 function handleF(f,type){
   if(!f)return;
   S[type+'File']=f;
@@ -399,11 +532,26 @@ function handleF(f,type){
   document.getElementById(ns).textContent=fmtSz(f.size);
   document.getElementById('chip-'+type).classList.add('show');
   if(type==='pdf'){
-    const g=f.name.replace(/\.pdf$/i,'').replace(/[-_]+/g,' ').replace(/chapter\s*\d+\s*/i,'').trim();
-    if(g&&!document.getElementById('ch-title').value) document.getElementById('ch-title').value=g;
+    const proposed = filenameToTitle(f.name);
+    // Always update title from filename — let user override manually after
+    if(proposed) document.getElementById('ch-title').value = proposed;
+    // Auto-detect subject from filename too
+    autoDetectSubject(f.name + ' ' + proposed);
+    updateThemePreview();
   }
   checkReady();
 }
+
+function autoDetectSubject(hint){
+  const h = hint.toLowerCase();
+  const sel = document.getElementById('ch-subject');
+  if(/resource|land|soil|water|forest|mineral|agriculture|geography|geo/.test(h)) sel.value='Geography';
+  else if(/cell|force|motion|chemical|atom|electric|light|sound|science|physics|chem|bio/.test(h)) sel.value='Science';
+  else if(/history|civics|political|constitution|democracy|nationalism|parliament/.test(h)) sel.value='History';
+  else if(/economic|money|market|poverty|development/.test(h)) sel.value='Economics';
+  else if(/math|algebra|geometry|calculus|trigon/.test(h)) sel.value='Mathematics';
+}
+
 function clearF(type){
   S[type+'File']=null;
   document.getElementById('chip-'+type).classList.remove('show');
@@ -431,6 +579,7 @@ function goStep(n){
     document.getElementById('key-needed-block').style.display=needKey?'block':'none';
     document.getElementById('key-skip-block').style.display=needKey?'none':'block';
   }
+  if(n===3) updateThemePreview();
 }
 function checkKey(){
   const k=document.getElementById('api-key').value.trim();
@@ -439,7 +588,6 @@ function checkKey(){
 }
 function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password'}
 function startConversion(){
-  // Set proxy URL from input
   const proxyVal = document.getElementById('proxy-url').value.trim();
   if(proxyVal) window.ANTHROPIC_PROXY = proxyVal;
   const banners={
@@ -472,7 +620,6 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 async function parseIDML(file){
   log('Parsing IDML…');
   const zip=await JSZip.loadAsync(file);
-  // Colours
   if(zip.files['Resources/Graphic.xml']){
     const xml=await zip.files['Resources/Graphic.xml'].async('string');
     const doc=new DOMParser().parseFromString(xml,'text/xml');
@@ -482,7 +629,6 @@ async function parseIDML(file){
       if(space==='CMYK'&&vals.length===4) S.colors[el.getAttribute('Name')||'']=cmyk(vals);
     });
   }
-  // Paragraph styles
   if(zip.files['Resources/Styles.xml']){
     const xml=await zip.files['Resources/Styles.xml'].async('string');
     const doc=new DOMParser().parseFromString(xml,'text/xml');
@@ -497,10 +643,11 @@ async function parseIDML(file){
       else if(/scientist|meet/.test(n))  t='meet-scientist';
       else if(/caption|fig/.test(n))     t='caption';
       else if(/head|title/.test(n))      t='section-heading';
+      else if(/knowledge|hub/.test(n))   t='knowledge-hub';
+      else if(/question|mcq|exercise/.test(n)) t='question';
       S.styleMap[el.getAttribute('Name')]=t;
     });
   }
-  // Text blocks
   const blocks=[];
   const storyFiles=Object.keys(zip.files).filter(k=>k.startsWith('Stories/Story_'));
   for(const sf of storyFiles){
@@ -566,10 +713,15 @@ async function readPages(apiKey){
 
   const SYS=`You convert textbook PDF pages to structured JSON.
 Identify every content block in reading order. Use EXACTLY these type strings:
-body | section-heading | example | activity | threads-curiosity | ready-to-go-beyond | pause-ponder | meet-scientist | figure | inline-figure-right | inline-figure-left | hero-image | math-display | math-inline
+body | section-heading | example | activity | threads-curiosity | ready-to-go-beyond | pause-ponder | meet-scientist | figure | inline-figure-right | inline-figure-left | hero-image | math-display | math-inline | knowledge-hub | question | answer | mcq-option
+
+For section-heading: add subtype "h2" or "h3".
+For knowledge-hub: these are blue callout boxes with bullet facts. content = each bullet as separate line.
+For question/answer/mcq blocks: preserve numbering exactly as in the PDF.
+For figure: set hasImage=true and describe the diagram/image in imageDesc.
 
 Return ONLY valid JSON — no markdown, no preamble:
-{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<opt>","answerText":"<examples>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}`;
+{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<opt>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}`;
 
   for(let i=0;i<N;i++){
     const pg=S.pages[i];
@@ -608,16 +760,41 @@ Return ONLY valid JSON — no markdown, no preamble:
   return results;
 }
 
-// ── HTML BUILDER ──
+// ── HTML BUILDER ══
 function buildHTML(blocks,meta){
   function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+  // Pick theme
+  const themeKey = detectTheme();
+  const theme = THEMES[themeKey];
+  const V = theme.vars;
+
   function b2h(b){
     const t=b.type, c=(b.content||'').trim();
     const lines=c.split('\n').filter(l=>l.trim());
     if(!c&&!b.hasImage)return'';
     if(t==='chapter-title'||t==='hero-image')return'';
-    if(t==='section-heading'){const lv=b.subtype==='h3'?'h3':'h2';return`<${lv} class="section-heading">${esc(c)}</${lv}>`;}
+
+    if(t==='section-heading'){
+      const lv=b.subtype==='h3'?'h3':'h2';
+      return`<${lv} class="section-heading">${esc(c)}</${lv}>`;
+    }
     if(t==='body')return lines.map(l=>`<p>${esc(l)}</p>`).join('\n');
+
+    if(t==='knowledge-hub'){
+      const items=lines.map(l=>`<li>${esc(l.replace(/^[•\-□▪\s]+/,''))}</li>`).join('');
+      return`<div class="knowledge-hub">\n<div class="knowledge-hub__head">💡 Knowledge Hub</div>\n<ul>${items}</ul>\n</div>`;
+    }
+    if(t==='question'){
+      return`<div class="question-block"><p class="question-text">${esc(c)}</p></div>`;
+    }
+    if(t==='answer'){
+      return`<div class="answer-block"><p><strong>Ans.</strong> ${esc(c)}</p></div>`;
+    }
+    if(t==='mcq-option'){
+      return lines.map(l=>`<p class="mcq-option">${esc(l)}</p>`).join('\n');
+    }
+
     if(t==='example'){
       const lbl=b.label||lines[0]||'Example';
       const q=lines.filter(l=>!/^answer/i.test(l)).join(' ');
@@ -647,7 +824,7 @@ function buildHTML(blocks,meta){
     if(t==='figure'||t==='inline-figure-right'||t==='inline-figure-left'){
       const cls=t==='inline-figure-right'?' class="inline-right"':t==='inline-figure-left'?' class="inline-left"':'';
       const cap=b.label?(b.label+(c?': '+c:'')):(c||'Figure');
-      return`<figure${cls}>\n<div style="width:100%;background:#EDE0F5;border-radius:4px;padding:1.5rem;text-align:center;color:#5B2D8E;font-size:.78rem">[${esc(b.imageDesc||cap)}]</div>\n<figcaption>${esc(cap)}</figcaption>\n</figure>`;
+      return`<figure${cls}>\n<div class="fig-placeholder">[${esc(b.imageDesc||cap)}]</div>\n<figcaption>${esc(cap)}</figcaption>\n</figure>`;
     }
     if(t==='math-display')return`<p style="text-align:center">\\[${c}\\]</p>`;
     if(t==='math-inline')return`<p>\\(${c}\\)</p>`;
@@ -671,67 +848,159 @@ function buildHTML(blocks,meta){
   }
   if(inCF)body+='\n</div>\n';
 
-  const PP=S.colors['Chapter Purple']||S.colors['Purple']||S.colors['Heading Purple']||'#5B2D8E';
-  const OR=S.colors['Orange']||S.colors['Accent Orange']||'#E87722';
-
-  const CSS=`:root{--pp:${PP};--pm:#7B3FA0;--pl:#C8A8DC;--pt:#6B3A9A;--or:${OR};--gd:#2E7D32;--tl:#00796B;--eh:#C0392B;--ah:#1A5276;--bs:#F3EAF9;--br:#FDF3E7;--bp:#E8F4F8;--ba:#EEF7EE;--bt:#F0EBF8;--fw:'Times New Roman',Georgia,serif;--fs:'Helvetica Neue',Arial,sans-serif}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{font-size:16px}
-body{font-family:var(--fw);font-size:1.05rem;line-height:1.75;color:#1A1A1A;background:#fff;-webkit-font-smoothing:antialiased}
+  // Build CSS from theme variables
+  const CSS=`
+:root{
+  --ch-bg1:${V.chapterBg1};
+  --ch-bg2:${V.chapterBg2};
+  --ch-text:${V.chapterText};
+  --h2-color:${V.h2Color};
+  --h2-border:${V.h2Border};
+  --h3-color:${V.h3Color};
+  --accent:${V.accentOrange};
+  --callout-bg:${V.calloutBg};
+  --callout-border:${V.calloutBorder};
+  --callout-head:${V.calloutHead};
+  --callout-text:${V.calloutText};
+  --know-bg:${V.knowledgeBg};
+  --know-border:${V.knowledgeBorder};
+  --know-head:${V.knowledgeHead};
+  --fig-caption:${V.figCaptionColor};
+  --q-bg:${V.questionBg};
+  --q-border:${V.questionBorder};
+  --ans-color:${V.answerColor};
+  --footer-color:${V.footerColor};
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:1rem;line-height:1.75;color:#1A1A1A;background:#fff;-webkit-font-smoothing:antialiased}
 body,p,li,h1,h2,h3,figcaption{-webkit-user-select:text;user-select:text}
-.chapter-header{background:linear-gradient(135deg,var(--pp) 0%,var(--pm) 60%,var(--pl) 100%);color:#fff;display:grid;grid-template-columns:1fr auto;align-items:stretch;overflow:hidden}
-.chapter-header__title-block{padding:2rem 1.5rem 2rem 2rem}
-.chapter-header__title{font-family:var(--fs);font-weight:900;font-size:clamp(1.6rem,4vw,2.4rem);line-height:1.2;color:#fff}
-.chapter-header__right{background:var(--pp);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 1.8rem;gap:.5rem;min-width:130px}
-.chapter-header__label{font-family:var(--fs);font-size:.9rem;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.08em;text-transform:uppercase}
-.chapter-header__number{font-family:var(--fs);font-size:clamp(3rem,8vw,5rem);font-weight:900;color:#fff;line-height:1}
-.hero-ph{width:100%;height:240px;background:linear-gradient(180deg,var(--pl),#EDE0F5);display:flex;align-items:center;justify-content:center;color:var(--pp);font-family:var(--fs);font-size:.82rem;letter-spacing:.06em}
-.chapter-wrap{max-width:720px;margin:0 auto;padding:2rem clamp(16px,5vw,48px) 4rem}
-p{margin-bottom:1rem;text-align:justify;hyphens:auto}p+p{text-indent:1.5em}
-h2.section-heading,h3.section-heading{font-family:var(--fs);font-weight:700;color:var(--pt);margin:2rem 0 .6rem}
-h2.section-heading{font-size:1.15rem}h3.section-heading{font-size:1rem}
-figure{margin:1.5rem 0;width:100%}figure img{width:100%;height:auto;display:block;border-radius:4px}
-figcaption{font-family:var(--fs);font-size:.82rem;color:#444;text-align:center;margin-top:.45rem;font-style:italic}
+
+/* CHAPTER HEADER */
+.chapter-header{background:linear-gradient(135deg,var(--ch-bg1) 0%,var(--ch-bg2) 100%);color:var(--ch-text);display:flex;align-items:stretch;overflow:hidden}
+.chapter-header__left{flex:1;padding:2rem 1.5rem 2rem 2.5rem;display:flex;flex-direction:column;justify-content:center}
+.chapter-header__eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;opacity:.8;margin-bottom:.5rem}
+.chapter-header__title{font-weight:900;font-size:clamp(1.6rem,4vw,2.5rem);line-height:1.15;color:var(--ch-text)}
+.chapter-header__right{background:rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem 2.2rem;gap:.3rem;min-width:120px;text-align:center}
+.chapter-header__chapter-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;opacity:.85}
+.chapter-header__number{font-size:clamp(3.5rem,10vw,5.5rem);font-weight:900;line-height:1;color:var(--ch-text)}
+
+/* CONTENT */
+.chapter-wrap{max-width:700px;margin:0 auto;padding:2.5rem clamp(16px,5vw,48px) 4rem}
+p{margin-bottom:1rem;text-align:justify;hyphens:auto}
+p+p{text-indent:1.5em}
+
+/* SECTION HEADINGS — match PDF chevron style */
+h2.section-heading{
+  font-size:1rem;font-weight:700;color:#fff;
+  background:var(--h2-color);
+  padding:.45rem .9rem .45rem 1rem;
+  margin:2rem 0 .75rem;
+  border-radius:0 4px 4px 0;
+  position:relative;
+  display:inline-block;
+  min-width:180px;
+}
+h2.section-heading::before{
+  content:'';position:absolute;right:-12px;top:0;bottom:0;
+  border-left:12px solid var(--h2-color);
+  border-top:17px solid transparent;
+  border-bottom:17px solid transparent;
+}
+h3.section-heading{
+  font-size:.95rem;font-weight:700;
+  color:var(--h3-color);
+  margin:1.6rem 0 .5rem;
+  border-left:3px solid var(--h2-border);
+  padding-left:.65rem;
+}
+
+/* FIGURES */
+figure{margin:1.5rem 0;width:100%;clear:both}
+.fig-placeholder{background:var(--callout-bg);border:1px dashed var(--callout-border);border-radius:6px;padding:2rem 1rem;text-align:center;color:var(--callout-head);font-size:.78rem}
+figcaption{font-size:.82rem;color:var(--fig-caption);font-weight:600;text-align:center;margin-top:.4rem}
 figure.inline-right{float:right;width:clamp(160px,38%,280px);margin:0 0 1rem 1.4rem;clear:right}
 figure.inline-left{float:left;width:clamp(140px,35%,260px);margin:0 1.4rem 1rem 0;clear:left}
 .clearfix::after{content:'';display:table;clear:both}
-.example-block{margin:1.4rem 0;padding:1rem 1.2rem;border-left:4px solid var(--pm);background:#FAF5FF;border-radius:0 6px 6px 0}
-.example-block__label{font-family:var(--fs);font-size:.9rem;font-weight:700;color:var(--eh);margin-bottom:.4rem;display:block}
-.example-block__answer-label{font-family:var(--fs);font-size:.9rem;font-weight:700;color:var(--ah);display:block;margin-top:.5rem;margin-bottom:.3rem}
-.example-block p{text-indent:0!important;margin-bottom:.5rem}
-.activity-box{background:var(--ba);border:1px solid #B8DDB8;border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0}
-.activity-box__heading{font-family:var(--fs);font-size:1rem;font-weight:700;color:var(--pt);margin-bottom:.5rem;text-decoration:underline;text-decoration-color:var(--pl)}
+
+/* KNOWLEDGE HUB — matches PDF blue callout box */
+.knowledge-hub{
+  background:var(--know-bg);
+  border:1.5px solid var(--know-border);
+  border-radius:8px;
+  padding:1rem 1.3rem;
+  margin:1.5rem 0;
+}
+.knowledge-hub__head{
+  font-weight:700;font-size:.88rem;color:var(--know-head);
+  margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;
+}
+.knowledge-hub ul{list-style:none;padding:0}
+.knowledge-hub li{
+  font-size:.9rem;padding:.25rem 0 .25rem 1.3rem;
+  position:relative;color:var(--callout-text);
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.knowledge-hub li:last-child{border-bottom:none}
+.knowledge-hub li::before{content:'□';position:absolute;left:0;color:var(--know-head);font-size:.75rem}
+
+/* QUESTIONS & ANSWERS */
+.question-block{margin:.5rem 0;padding:.5rem 0 .5rem 1.1rem;border-left:3px solid var(--q-border)}
+.question-text{font-weight:500;color:#1a1a1a;margin-bottom:0;text-indent:0!important}
+.answer-block{margin:.3rem 0 .8rem 1.5rem;font-size:.93rem;color:var(--ans-color)}
+.answer-block p{text-indent:0!important;margin-bottom:.3rem}
+.mcq-option{font-size:.9rem;color:#333;margin:.15rem 0 .15rem 1.5rem;text-indent:0!important}
+
+/* ACTIVITY BOX */
+.activity-box{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0}
+.activity-box__heading{font-size:1rem;font-weight:700;color:#14532d;margin-bottom:.5rem}
 .activity-box p{text-indent:0!important;margin-bottom:.5rem}
-.scientist-block{float:left;width:clamp(160px,32%,230px);margin:0 1.5rem 1rem 0;background:var(--bs);border:1px solid var(--pl);border-radius:8px;padding:1rem;font-size:.85rem;line-height:1.55;clear:left}
-.scientist-block__heading{font-family:var(--fs);font-size:.9rem;font-weight:700;color:var(--gd);border-bottom:2px solid var(--gd);padding-bottom:.3rem;margin-bottom:.7rem;text-align:center}
-.scientist-block__subheading{font-family:var(--fs);font-size:.8rem;font-weight:700;color:var(--pt);margin-bottom:.3rem}
-.scientist-block p{text-indent:0!important;font-size:.83rem;color:#2D1A47}
-.rtgb-box{background:var(--br);border:1px solid #F0C080;border-radius:8px;padding:1.2rem 1.4rem;margin:1.8rem 0;display:flex;gap:1rem;align-items:flex-start}
-.rtgb-box__icon{font-size:2rem;flex-shrink:0;padding-top:.1rem}
+
+/* EXAMPLE BLOCK */
+.example-block{margin:1.4rem 0;padding:1rem 1.2rem;border-left:4px solid var(--h2-border);background:var(--callout-bg);border-radius:0 6px 6px 0}
+.example-block__label{font-size:.9rem;font-weight:700;color:#C0392B;margin-bottom:.4rem;display:block}
+.example-block__answer-label{font-size:.9rem;font-weight:700;color:#1A5276;display:block;margin-top:.5rem;margin-bottom:.3rem}
+.example-block p{text-indent:0!important;margin-bottom:.5rem}
+
+/* OTHER CALLOUTS */
+.rtgb-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:1.2rem 1.4rem;margin:1.8rem 0;display:flex;gap:1rem;align-items:flex-start}
+.rtgb-box__icon{font-size:2rem;flex-shrink:0}
 .rtgb-box__content{flex:1;min-width:0}
-.rtgb-box__heading{font-family:var(--fs);font-size:1rem;font-weight:700;color:var(--or);margin-bottom:.4rem;text-decoration:underline}
-.rtgb-box__subheading{font-family:var(--fs);font-size:.88rem;font-weight:700;color:var(--or);margin-bottom:.5rem}
+.rtgb-box__heading{font-size:1rem;font-weight:700;color:#b45309;margin-bottom:.4rem}
+.rtgb-box__subheading{font-size:.88rem;font-weight:700;color:#92400e;margin-bottom:.5rem}
 .rtgb-box p{text-indent:0!important;font-size:.9rem;margin-bottom:.5rem}
-.threads-box{background:var(--bt);border:1px solid var(--pl);border-radius:8px;padding:1.2rem 1.4rem;margin:1.8rem 0}
+
+.threads-box{background:var(--callout-bg);border:1px solid var(--callout-border);border-radius:8px;padding:1.2rem 1.4rem;margin:1.8rem 0}
 .threads-box__header{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem}
-.threads-box__title{font-family:var(--fs);font-size:1.05rem;font-weight:700;color:var(--pp)}
-.threads-box__subheading{font-family:var(--fs);font-size:.9rem;font-weight:700;color:var(--pt);margin-bottom:.4rem}
+.threads-box__title{font-size:1.05rem;font-weight:700;color:var(--callout-head)}
 .threads-box p{text-indent:0!important;font-size:.9rem;margin-bottom:.5rem}
-.pause-ponder{background:var(--bp);border-left:4px solid var(--tl);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.8rem 0}
+
+.pause-ponder{background:#e0f2fe;border-left:4px solid #0284c7;border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.8rem 0}
 .pause-ponder__header{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem}
-.pause-ponder__icon{font-size:1.3rem}
-.pause-ponder__heading{font-family:var(--fs);font-size:.95rem;font-weight:700;color:var(--tl)}
+.pause-ponder__heading{font-size:.95rem;font-weight:700;color:#075985}
 .pause-ponder ol{padding-left:1.5rem}
 .pause-ponder li{font-size:.92rem;line-height:1.6;margin-bottom:.6rem}
-.book-footer{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-top:1px solid #ccc;margin-top:3rem}
-.book-footer__label{font-family:var(--fs);font-size:.88rem;color:#444}
+
+.scientist-block{float:left;width:clamp(160px,32%,230px);margin:0 1.5rem 1rem 0;background:var(--callout-bg);border:1px solid var(--callout-border);border-radius:8px;padding:1rem;font-size:.85rem;line-height:1.55;clear:left}
+.scientist-block__heading{font-size:.9rem;font-weight:700;color:#2E7D32;border-bottom:2px solid #2E7D32;padding-bottom:.3rem;margin-bottom:.7rem;text-align:center}
+.scientist-block p{text-indent:0!important;font-size:.83rem}
+
+/* FOOTER */
+.book-footer{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-top:2px solid var(--h2-border);margin-top:3rem}
+.book-footer__label{font-size:.85rem;color:var(--footer-color);font-weight:600}
+
 @media(max-width:600px){
-  .chapter-header{grid-template-columns:1fr}
+  .chapter-header{flex-direction:column}
   .chapter-header__right{flex-direction:row;padding:.8rem 1.2rem;gap:1rem}
   .chapter-header__number{font-size:2.5rem}
   figure.inline-right,figure.inline-left,.scientist-block{float:none;width:100%;margin:1rem 0}
   .rtgb-box{flex-direction:column}
 }
-@media print{.chapter-header,.rtgb-box,.threads-box,.activity-box,.pause-ponder{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
+@media print{
+  .chapter-header,.rtgb-box,.threads-box,.activity-box,.pause-ponder,.knowledge-hub{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact
+  }
+}`;
 
   return`<!DOCTYPE html>
 <html lang="en">
@@ -739,30 +1008,25 @@ figure.inline-left{float:left;width:clamp(140px,35%,260px);margin:0 1.4rem 1rem 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Chapter ${esc(meta.num)} — ${esc(meta.title)}</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
 <style>${CSS}</style>
 </head>
 <body>
 <header class="chapter-header" role="banner">
-  <div class="chapter-header__title-block">
+  <div class="chapter-header__left">
+    <div class="chapter-header__eyebrow">${esc(meta.subject)} · ${esc(meta.grade)}</div>
     <h1 class="chapter-header__title">${esc(meta.title)}</h1>
   </div>
   <div class="chapter-header__right">
-    <span class="chapter-header__label">Chapter</span>
+    <span class="chapter-header__chapter-label">Chapter</span>
     <span class="chapter-header__number">${esc(meta.num)}</span>
   </div>
 </header>
-<div class="hero-ph">[ HERO IMAGE — embed chapter opening photo here ]</div>
 <main class="chapter-wrap" id="main-content">
 ${body}
   <footer class="book-footer" role="contentinfo">
-    <span style="font-size:1.4rem">🔍</span>
-    <span class="book-footer__label">${esc(meta.book)} | ${esc(meta.grade)}</span>
+    <span class="book-footer__label">${esc(meta.book)} | ${esc(meta.grade)} | ${esc(meta.subject)}</span>
   </footer>
 </main>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"><\/script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
-  onload="renderMathInElement(document.body,{delimiters:[{left:'\\\\(',right:'\\\\)',display:false},{left:'\\\\[',right:'\\\\]',display:true}],throwOnError:false})"><\/script>
 </body>
 </html>`;
 }
@@ -770,30 +1034,26 @@ ${body}
 // ── MAIN ──
 async function run(){
   const meta={
-    num:document.getElementById('ch-num').value||'1',
-    title:document.getElementById('ch-title').value||'Chapter',
-    grade:document.getElementById('ch-grade').value||'Grade 9',
-    subject:document.getElementById('ch-subject').value||'Science',
-    book:document.getElementById('ch-book').value||'Exploration',
+    num   : document.getElementById('ch-num').value||'1',
+    title : document.getElementById('ch-title').value||'Chapter',
+    grade : document.getElementById('ch-grade').value||'Grade 10',
+    subject: document.getElementById('ch-subject').value||'Geography',
+    book  : document.getElementById('ch-book').value||'Contemporary India',
   };
   const apiKey=document.getElementById('api-key').value.trim();
   const errEl=document.getElementById('err-box');
   errEl.classList.remove('show');
-
   try{
     setP(0,'Starting…');
     let allBlocks=[];
-
     if(S.mode==='pdf'){
       setP(5,'Rasterising PDF…');  await rasterisePDF(S.pdfFile);
       setP(38,'Claude reading pages…');
       const res=await readPages(apiKey);
       for(const pg of res) if(pg.blocks) allBlocks=allBlocks.concat(pg.blocks);
-
     }else if(S.mode==='idml'){
       setP(10,'Parsing IDML…'); await parseIDML(S.idmlFile);
       setP(85,'Building HTML…'); allBlocks=S.idmlBlocks;
-
     }else{
       setP(5,'Parsing IDML tokens…');  await parseIDML(S.idmlFile);
       setP(15,'Rasterising PDF…');     await rasterisePDF(S.pdfFile);
@@ -801,12 +1061,10 @@ async function run(){
       const res=await readPages(apiKey);
       for(const pg of res) if(pg.blocks) allBlocks=allBlocks.concat(pg.blocks);
     }
-
     setP(92,'Generating HTML…');
     S.finalHTML=buildHTML(allBlocks,meta);
     setP(100,'✓ Done!');
     log(`Done — ${(S.finalHTML.length/1024).toFixed(0)} KB`);
-
     const mL={pdf:'PDF-only',idml:'IDML-only',both:'PDF+IDML'};
     document.getElementById('res-title').textContent=`Ch ${meta.num} — ${meta.title}`;
     document.getElementById('res-info').textContent=
@@ -815,7 +1073,6 @@ async function run(){
     document.getElementById('btn-4').disabled=false;
     document.getElementById('btn-back4').disabled=false;
     toast('✓ Conversion complete!');
-
   }catch(e){
     log('ERROR: '+e.message);
     errEl.textContent='Error: '+e.message+(e.message.includes('401')?'\n→ Check your API key is correct and has billing enabled.':e.message.includes('402')?'\n→ Add credits at console.anthropic.com/settings/billing':'');
@@ -858,6 +1115,7 @@ function toast(msg){
 
 setupDrop('dz-pdf','inp-pdf','pdf');
 setupDrop('dz-idml','inp-idml','idml');
+updateThemePreview();
 </script>
 </body>
 </html>
