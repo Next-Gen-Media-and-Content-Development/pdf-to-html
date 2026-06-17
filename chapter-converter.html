@@ -238,6 +238,25 @@ hr.dv{border:none;border-top:1px solid var(--bdr);margin:1.1rem 0}
     </div>
   </div>
 
+  <!-- Proxy URL field -->
+  <div id="proxy-field" style="margin-bottom:.85rem">
+    <div style="font-size:.66rem;font-weight:700;color:#6B6B6B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">
+      Cloudflare Proxy URL <span style="font-weight:400;text-transform:none;color:#E87722">⚠ Required — direct API calls are blocked by browsers</span>
+    </div>
+    <div style="background:#FDF3E7;border:1px solid #F0C080;border-radius:7px;padding:.75rem 1rem;font-size:.78rem;color:#7a4a0e;margin-bottom:.6rem;line-height:1.7">
+      <strong>One-time 3-minute setup:</strong><br>
+      1. Go to <strong>dash.cloudflare.com</strong> → sign up free (no credit card)<br>
+      2. Click <strong>Workers &amp; Pages</strong> → <strong>Create</strong> → <strong>Create Worker</strong><br>
+      3. Delete the default code, paste the contents of <strong>cloudflare-worker.js</strong> (download below)<br>
+      4. Click <strong>Deploy</strong> → copy the worker URL (e.g. <code style="background:#fff3e0;padding:1px 4px;border-radius:3px">https://xxx.workers.dev</code>)<br>
+      5. Paste it in the box below
+    </div>
+    <input type="text" id="proxy-url" placeholder="https://your-worker.workers.dev" value="https://wispy-sound-1236.shikhakaushik641.workers.dev/"
+      style="width:100%;height:33px;border:1px solid #DDD0EE;border-radius:5px;padding:0 .65rem;font-size:.8rem;font-family:monospace;background:#fff;margin-bottom:.4rem"
+      oninput="document.getElementById('proxy-url').style.borderColor=this.value.startsWith('https://')?'#2E7D32':'#DDD0EE'">
+    <a href="cloudflare-worker.js" download style="font-size:.73rem;color:#5B2D8E;text-decoration:underline">⬇ Download cloudflare-worker.js</a>
+  </div>
+
   <div id="key-skip-block" style="display:none">
     <div class="info green">
       <strong>No API key needed</strong> for IDML-only mode. Text is extracted directly from InDesign. Click Continue.
@@ -420,6 +439,9 @@ function checkKey(){
 }
 function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password'}
 function startConversion(){
+  // Set proxy URL from input
+  const proxyVal = document.getElementById('proxy-url').value.trim();
+  if(proxyVal) window.ANTHROPIC_PROXY = proxyVal;
   const banners={
     pdf:'📄 PDF-only — Claude reads each page visually for exact layout fidelity',
     idml:'🎨 IDML-only — text & styles extracted directly, no AI vision',
@@ -554,7 +576,8 @@ Return ONLY valid JSON — no markdown, no preamble:
     document.getElementById('th-'+pg.pageNum)?.classList.add('proc');
     setP(38+(i/N)*50,`Claude reading page ${pg.pageNum}/${N}…`);
     try{
-      const r=await fetch('https://api.anthropic.com/v1/messages',{
+      const PROXY=window.ANTHROPIC_PROXY||'https://wispy-sound-1236.shikhakaushik641.workers.dev/';
+      const r=await fetch(PROXY,{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
         body:JSON.stringify({
