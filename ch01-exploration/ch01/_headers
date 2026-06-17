@@ -1,0 +1,30 @@
+# _headers
+# ─────────────────────────────────────────────────────────────────
+# Cloudflare Pages / Netlify cache rules.
+# GitHub Pages IGNORES this file (it cannot set custom headers).
+# To get these headers on GitHub Pages, proxy through Cloudflare CDN
+# (free plan) — see README.md for the 5-minute setup.
+# ─────────────────────────────────────────────────────────────────
+
+# HTML — short cache (content changes; revalidate quickly)
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# CSS — immutable (filename is content-hashed, e.g. styles.bdd1a5e7.css)
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# JS — immutable (filename is content-hashed)
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images — immutable WebP (filenames are stable; change filename to bust)
+/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts — immutable WOFF2
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
