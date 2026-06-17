@@ -403,6 +403,25 @@ const THEMES = {
       footerColor:'#5B2D8E',
     }
   },
+  exploration: {
+    label: 'Exploration Science — Brown & Orange (NCERT Grade 9)',
+    swatches: ['#5D3A1A','#8B4513','#c0392b','#f5f0eb','#fef3e2'],
+    vars: {
+      chapterBg1:'#5D3A1A', chapterBg2:'#8B4513',
+      chapterText:'#ffffff',
+      h2Color:'#c0392b',    h2Border:'#e8a87c',
+      h3Color:'#8B4513',
+      accentOrange:'#c0392b',
+      bodyBg:'#ffffff',     contentBg:'#f5f0eb',
+      calloutBg:'#fef9f0',  calloutBorder:'#e8c99a',
+      calloutHead:'#5D3A1A',calloutText:'#3d2008',
+      knowledgeBg:'#fef3e2',knowledgeBorder:'#f5c67a',knowledgeHead:'#7a4500',
+      figCaptionColor:'#8B4513',
+      questionBg:'#fef9f0', questionBorder:'#8B4513',
+      answerColor:'#1A3A6E',
+      footerColor:'#5D3A1A',
+    }
+  },
   history: {
     label: 'History / Civics — Brown & Gold',
     swatches: ['#4e342e','#795548','#f9a825','#fbe9e7','#fff8e1'],
@@ -465,10 +484,13 @@ const THEMES = {
 function detectTheme(){
   const subj = document.getElementById('ch-subject').value.toLowerCase();
   const title = (document.getElementById('ch-title').value||'').toLowerCase();
-  if(/geography|geo|resource|land|soil|water|forest|mineral|agriculture|india.*map/.test(subj+' '+title)) return 'geography';
-  if(/science|physics|chemistry|biology|cell|force|motion|chemical|atom|electric/.test(subj+' '+title)) return 'science';
-  if(/history|civics|political|constitution|democracy|nationalism/.test(subj+' '+title)) return 'history';
-  if(/economics|economic|money|market|development|poverty/.test(subj+' '+title)) return 'economics';
+  const combined = subj + ' ' + title;
+  if(/geography|geo|resource|land|soil|water|forest|mineral|agriculture|india.*map/.test(combined)) return 'geography';
+  // Exploration book (NCERT Grade 9 Science) — brown/orange theme
+  if(/tissue|organ|meristem|epithelial|muscle|skeletal|cell.*build|exploration/.test(combined)) return 'exploration';
+  if(/science|physics|chemistry|biology|cell|force|motion|chemical|atom|electric/.test(combined)) return 'science';
+  if(/history|civics|political|constitution|democracy|nationalism/.test(combined)) return 'history';
+  if(/economics|economic|money|market|development|poverty/.test(combined)) return 'economics';
   return 'default';
 }
 
@@ -546,10 +568,17 @@ function autoDetectSubject(hint){
   const h = hint.toLowerCase();
   const sel = document.getElementById('ch-subject');
   if(/resource|land|soil|water|forest|mineral|agriculture|geography|geo/.test(h)) sel.value='Geography';
+  else if(/tissue|organ|meristem|epithelial|muscle|skeletal|exploration/.test(h)) sel.value='Science';
   else if(/cell|force|motion|chemical|atom|electric|light|sound|science|physics|chem|bio/.test(h)) sel.value='Science';
   else if(/history|civics|political|constitution|democracy|nationalism|parliament/.test(h)) sel.value='History';
   else if(/economic|money|market|poverty|development/.test(h)) sel.value='Economics';
   else if(/math|algebra|geometry|calculus|trigon/.test(h)) sel.value='Mathematics';
+  // Update book title default for Exploration
+  const bookInp = document.getElementById('ch-book');
+  if(/tissue|organ|meristem|exploration/.test(h) && bookInp.value === 'Contemporary India') {
+    bookInp.value = 'Exploration';
+    document.getElementById('ch-grade').value = 'Grade 9';
+  }
 }
 
 function clearF(type){
@@ -713,12 +742,18 @@ async function readPages(apiKey){
 
   const SYS=`You convert textbook PDF pages to structured JSON.
 Identify every content block in reading order. Use EXACTLY these type strings:
-body | section-heading | example | activity | threads-curiosity | ready-to-go-beyond | pause-ponder | meet-scientist | figure | inline-figure-right | inline-figure-left | hero-image | math-display | math-inline | knowledge-hub | question | answer | mcq-option
+body | section-heading | example | activity | threads-curiosity | ready-to-go-beyond | pause-ponder | meet-scientist | figure | inline-figure-right | inline-figure-left | hero-image | math-display | math-inline | knowledge-hub | question | answer | mcq-option | table | think-it-over | bridging-science | at-a-glance | journey-beyond | think-scientist
 
-For section-heading: add subtype "h2" or "h3".
-For knowledge-hub: these are blue callout boxes with bullet facts. content = each bullet as separate line.
-For question/answer/mcq blocks: preserve numbering exactly as in the PDF.
-For figure: set hasImage=true and describe the diagram/image in imageDesc.
+CRITICAL RULES:
+- Tables (Table 3.1, Table 3.2, etc.): use type "table". Set label = table title/caption. For content, output PIPE-SEPARATED rows with each row on its own line. First row = header. Example: "Function|Structure|Location\nExchange|Thin flat cells|Blood vessels\nProtection|Many layers|Skin"
+- Figures/diagrams: use type "figure". Set hasImage=true, imageDesc = detailed description of what the diagram shows.
+- NEVER put table data inside a figure. Tables and figures are different block types.
+- section-heading: add subtype "h2" for numbered sections (3.1, 3.2), "h3" for sub-sections (3.2.1, a., b., i., ii.)
+- knowledge-hub: blue callout boxes with bullet facts. Each bullet on its own line in content.
+- activity: numbered activity boxes (Activity 3.1, Activity 3.2, etc.)
+- think-it-over: the question box at chapter opening with bullet questions
+- at-a-glance: summary bullet list at end of chapter
+- pause-ponder: "Pause and Ponder" reflection boxes
 
 Return ONLY valid JSON — no markdown, no preamble:
 {"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<opt>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}`;
@@ -780,6 +815,45 @@ function buildHTML(blocks,meta){
       return`<${lv} class="section-heading">${esc(c)}</${lv}>`;
     }
     if(t==='body')return lines.map(l=>`<p>${esc(l)}</p>`).join('\n');
+
+    // ── TABLE — render actual HTML table from pipe-delimited content ──
+    if(t==='table'){
+      const rows = c.split('\n').map(r=>r.split('|').map(cell=>cell.trim())).filter(r=>r.length>1);
+      if(!rows.length) return b.label?`<p><em>${esc(b.label)}</em></p>`:'';
+      const header = rows[0];
+      const body_rows = rows.slice(1);
+      const thCells = header.map(h=>`<th>${esc(h)}</th>`).join('');
+      const tdRows = body_rows.map(r=>`<tr>${r.map(cell=>`<td>${esc(cell)}</td>`).join('')}</tr>`).join('\n');
+      const caption = b.label ? `<caption>${esc(b.label)}</caption>` : '';
+      return`<div class="table-wrap">\n<table class="content-table">\n${caption}\n<thead><tr>${thCells}</tr></thead>\n<tbody>${tdRows}</tbody>\n</table>\n</div>`;
+    }
+
+    // ── THINK IT OVER — opening question box ──
+    if(t==='think-it-over'){
+      const items = lines.map(l=>`<li>${esc(l.replace(/^[•\-y\s]+/,''))}</li>`).join('');
+      return`<div class="think-it-over">\n<div class="think-it-over__head">❓ Think It Over</div>\n<ul>${items}</ul>\n</div>`;
+    }
+
+    // ── AT A GLANCE — summary bullets ──
+    if(t==='at-a-glance'){
+      const items = lines.map(l=>`<li>${esc(l.replace(/^[•\-\s]+/,''))}</li>`).join('');
+      return`<div class="at-a-glance">\n<div class="at-a-glance__head">📋 At a Glance</div>\n<ul>${items}</ul>\n</div>`;
+    }
+
+    // ── BRIDGING SCIENCE / THINK AS SCIENTIST ──
+    if(t==='bridging-science'||t==='think-scientist'){
+      const icon = t==='think-scientist'?'🔬':'🌍';
+      const heading = t==='think-scientist'?'Think as a Scientist':'Bridging Science and Society';
+      const firstLine = lines[0]||'';
+      const rest = lines.slice(1).map(l=>`<p>${esc(l)}</p>`).join('');
+      return`<div class="bridging-box">\n<div class="bridging-box__head">${icon} ${heading}</div>\n<p class="bridging-box__sub">${esc(firstLine)}</p>\n${rest}\n</div>`;
+    }
+
+    // ── JOURNEY BEYOND ──
+    if(t==='journey-beyond'){
+      const items = lines.map(l=>`<li>${esc(l.replace(/^[•y\-\s]+/,''))}</li>`).join('');
+      return`<div class="journey-box">\n<div class="journey-box__head">🚀 The Journey Beyond</div>\n<ul>${items}</ul>\n</div>`;
+    }
 
     if(t==='knowledge-hub'){
       const items=lines.map(l=>`<li>${esc(l.replace(/^[•\-□▪\s]+/,''))}</li>`).join('');
@@ -985,8 +1059,40 @@ figure.inline-left{float:left;width:clamp(140px,35%,260px);margin:0 1.4rem 1rem 
 .scientist-block__heading{font-size:.9rem;font-weight:700;color:#2E7D32;border-bottom:2px solid #2E7D32;padding-bottom:.3rem;margin-bottom:.7rem;text-align:center}
 .scientist-block p{text-indent:0!important;font-size:.83rem}
 
-/* FOOTER */
-.book-footer{display:flex;align-items:center;gap:.7rem;padding:.6rem 0;border-top:2px solid var(--h2-border);margin-top:3rem}
+/* TABLES */
+.table-wrap{overflow-x:auto;margin:1.5rem 0}
+.content-table{width:100%;border-collapse:collapse;font-size:.88rem;line-height:1.5}
+.content-table caption{font-weight:700;font-size:.9rem;color:var(--h2-color);text-align:center;margin-bottom:.5rem;caption-side:top}
+.content-table thead tr{background:var(--h2-color);color:#fff}
+.content-table th{padding:.45rem .7rem;font-weight:700;text-align:left;font-size:.82rem;letter-spacing:.02em}
+.content-table td{padding:.4rem .7rem;border-bottom:1px solid var(--callout-border);color:#1a1a1a;vertical-align:top}
+.content-table tbody tr:nth-child(even){background:var(--callout-bg)}
+.content-table tbody tr:hover{background:rgba(0,0,0,.03)}
+
+/* THINK IT OVER */
+.think-it-over{background:var(--callout-bg);border:1.5px solid var(--callout-border);border-radius:8px;padding:1rem 1.3rem;margin:1.5rem 0}
+.think-it-over__head{font-weight:700;font-size:.9rem;color:var(--callout-head);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.think-it-over ul{list-style:none;padding:0}
+.think-it-over li{font-size:.9rem;padding:.2rem 0 .2rem 1.2rem;position:relative;color:var(--callout-text)}
+.think-it-over li::before{content:'▸';position:absolute;left:0;color:var(--callout-head);font-size:.72rem;top:.35rem}
+
+/* AT A GLANCE */
+.at-a-glance{background:var(--callout-bg);border:1.5px solid var(--callout-border);border-radius:8px;padding:1.1rem 1.3rem;margin:2rem 0}
+.at-a-glance__head{font-weight:700;font-size:.95rem;color:var(--callout-head);margin-bottom:.7rem}
+.at-a-glance ul{padding-left:1.3rem}
+.at-a-glance li{font-size:.9rem;margin-bottom:.35rem;color:var(--callout-text)}
+
+/* BRIDGING SCIENCE / THINK AS SCIENTIST */
+.bridging-box{background:#f9f4ee;border:1.5px solid var(--callout-border);border-radius:8px;padding:1.1rem 1.3rem;margin:1.8rem 0}
+.bridging-box__head{font-weight:700;font-size:.92rem;color:var(--callout-head);margin-bottom:.5rem}
+.bridging-box__sub{font-weight:600;font-size:.88rem;color:var(--h3-color);margin-bottom:.4rem}
+.bridging-box p{text-indent:0!important;font-size:.9rem;margin-bottom:.45rem}
+
+/* JOURNEY BEYOND */
+.journey-box{background:var(--callout-bg);border:2px solid var(--callout-border);border-radius:8px;padding:1.1rem 1.4rem;margin:2rem 0}
+.journey-box__head{font-weight:700;font-size:.95rem;color:var(--callout-head);margin-bottom:.7rem}
+.journey-box ul{padding-left:1.3rem}
+.journey-box li{font-size:.9rem;margin-bottom:.5rem;color:var(--callout-text)}
 .book-footer__label{font-size:.85rem;color:var(--footer-color);font-weight:600}
 
 @media(max-width:600px){
