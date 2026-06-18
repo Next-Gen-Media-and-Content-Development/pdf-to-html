@@ -930,15 +930,17 @@ function fmtSz(b){return b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed
 function goStep(n){
   // API key validation for PDF modes
   if(n===3&&S.mode!=='idml'){
-    const k=document.getElementById('api-key').value.trim();
-    const proxy=document.getElementById('proxy-url').value.trim();
-    // Allow if proxy is set (proxy handles auth) or key is valid
-    if(!proxy&&(!k.startsWith('sk-ant-')||k.length<30)){
-      document.getElementById('key-err').classList.add('show');
+    const k=document.getElementById('api-key')?.value.trim()||'';
+    const proxy=document.getElementById('proxy-url')?.value.trim()||DEFAULT_PROXY;
+    const proxyOk=proxy&&proxy.startsWith('http');
+    const keyOk=k.startsWith('sk-ant-')&&k.length>30;
+    if(!proxyOk&&!keyOk){
+      const errEl=document.getElementById('key-err');
+      if(errEl)errEl.classList.add('show');
       return;
     }
   }
-  [1,2,3,4,5].forEach(i=>{
+    [1,2,3,4,5].forEach(i=>{
     document.getElementById('panel-'+i).classList.toggle('active',i===n);
     const t=document.getElementById('tab-'+i);
     t.classList.remove('active','done');
@@ -962,13 +964,38 @@ function checkKey(){
 function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password'}
 
 function startConversion(){
-  const p=document.getElementById('proxy-url').value.trim();
+  // Guard: mode must be set
+  if(!S.mode){
+    toast('⚠ Please select PDF, IDML, or both first');
+    goStep(1);
+    return;
+  }
+  // Guard: PDF mode needs a file
+  if((S.mode==='pdf'||S.mode==='both')&&!S.pdfFile){
+    toast('⚠ Please upload a PDF file');
+    goStep(1);
+    return;
+  }
+  // Guard: IDML mode needs a file
+  if((S.mode==='idml'||S.mode==='both')&&!S.idmlFile){
+    toast('⚠ Please upload an IDML file');
+    goStep(1);
+    return;
+  }
+  const p=document.getElementById('proxy-url')?.value.trim()||'';
   window.ANTHROPIC_PROXY=p||DEFAULT_PROXY;
-  document.getElementById('mode-banner').textContent={pdf:'📄 PDF-only — Claude reads each page visually',idml:'🎨 IDML-only — parsing InDesign styles and text',both:'📄+🎨 PDF+IDML — AI vision + exact design tokens'}[S.mode];
+  const modeLabels={pdf:'📄 PDF-only — Claude reads each page visually',idml:'🎨 IDML-only — parsing InDesign styles and text',both:'📄+🎨 PDF+IDML — AI vision + exact design tokens'};
+  const banner=document.getElementById('mode-banner');
+  if(banner)banner.textContent=modeLabels[S.mode]||'Converting…';
   goStep(4);
-  document.getElementById('btn-back4').disabled=true;
-  document.getElementById('btn-4').disabled=true;
-  run();
+  // Small delay so panel-4 renders before we touch its elements
+  setTimeout(()=>{
+    const b4=document.getElementById('btn-back4');
+    const b5=document.getElementById('btn-4');
+    if(b4)b4.disabled=true;
+    if(b5)b5.disabled=true;
+    run();
+  },50);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -2196,14 +2223,19 @@ function toast(msg){
 }
 
 /* ─── INIT ─── */
-document.addEventListener('DOMContentLoaded', function() {
+function initConverter(){
   setupDrop('dz-pdf','inp-pdf','pdf');
   setupDrop('dz-idml','inp-idml','idml');
   updateThemePreview();
-  // Pre-fill proxy so it's visible and editable
+  // Pre-fill proxy immediately
   const proxyEl=document.getElementById('proxy-url');
   if(proxyEl&&!proxyEl.value)proxyEl.value=DEFAULT_PROXY;
-});
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',initConverter);
+}else{
+  initConverter(); // DOM already ready
+}
 
 </script>
 </body>
