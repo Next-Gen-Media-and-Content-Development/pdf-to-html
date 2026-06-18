@@ -740,12 +740,12 @@ const THEMES={
   },
   science:{
     label:'Science -- Purple & Orange (Exploration)',
-    swatches:['#5B2D8E','#7B3FA0','#E87722','#EDE0F5'],
-    vars:{chBg1:'#5B2D8E',chBg2:'#7B3FA0',chText:'#fff',
-      h2Color:'#6B3A9A',h2Border:'#C8A8DC',h3Color:'#5B2D8E',
+    swatches:['#1D1756','#5B2D8E','#E87722','#EDE0F5'],
+    vars:{chBg1:'#1D1756',chBg2:'#5B2D8E',chText:'#fff',
+      h2Color:'#5B2D8E',h2Border:'#C8A8DC',h3Color:'#7B3FA0',
       accent:'#E87722',calloutBg:'#EDE0F5',calloutBorder:'#C8A8DC',
       calloutHead:'#5B2D8E',calloutText:'#2D1A47',
-      figCaption:'#444444',footer:'#5B2D8E',keyTerm:'#5B2D8E',
+      figCaption:'#555555',footer:'#1D1756',keyTerm:'#0D47A1',
       pageBg:'#FFFFFF'}
   },
   maths:{
@@ -1172,7 +1172,7 @@ body | section-heading | figure | inline-figure-right | inline-figure-left | her
 math-display | math-inline | table | knowledge-hub | question | answer | mcq-option |
 example | activity | pause-ponder | think-it-over | threads-curiosity | meet-scientist |
 bridging-science | ready-to-go-beyond | at-a-glance | journey-beyond | think-scientist |
-chapter-title
+note-box | chapter-title
 
 RULES:
 1. section-heading: set subtype="h2" or "h3". Include numbering (e.g. "1.1 Section Name").
@@ -1184,6 +1184,7 @@ RULES:
 7. DO NOT invent, rephrase, or skip any real content text.
 8. at-a-glance: bulleted summary boxes.
 9. chapter-title: only on the cover/first page -- title text only.
+13. note-box: small bordered boxes labelled "Note" in the source. These are DISTINCT from knowledge-hub. Use note-box for any box with a "Note" header.
 10. figures: imageDesc must be a FULL detailed description of exactly what is shown (people, objects, labels, colours, layout). This becomes the alt text AND placeholder label. Be specific: "Three canoeists paddling red, yellow and blue canoes on a calm lake" not just "canoe image".
 11. For body blocks: reproduce ALL text EXACTLY as printed -- every word, punctuation, superscript, unit. Do not summarise, paraphrase or skip anything.
 12. section-heading: always include the section number prefix (e.g. "6.1 The Concept of Force").
@@ -1385,8 +1386,8 @@ ${lines.map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 ${lines.map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 </div>`;
 
-    if(t==='bridging-science')return`<div class="threads-box">
-<div class="threads-box__title">🌉 Bridging Science and Society</div>
+    if(t==='bridging-science')return`<div class="bridge-box">
+<div class="bridge-box__heading">🌉 Bridging Science and Society</div>
 ${lines.map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 </div>`;
 
@@ -1427,7 +1428,12 @@ ${lines.slice(b.label?0:1).map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 </div>`;
 
     if(t==='answer')return`<div class="answer-block">
-<p><strong>Ans.</strong> ${processInlineMarkup(c)}</p>
+<p><strong>Answer:</strong> ${processInlineMarkup(c)}</p>
+</div>`;
+
+    if(t==='note-box')return`<div class="note-box">
+<div class="note-box__label">Note</div>
+${lines.map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 </div>`;
 
     if(t==='mcq-option')return lines.map(l=>`<p class="mcq-option">${processInlineMarkup(l)}</p>`).join('\n');
@@ -1501,14 +1507,16 @@ return`:root {
   --clr-example-head:  #C0392B;
   --clr-answer-head:   #1A5276;
   --clr-body:          #1A1A1A;
-  --clr-caption:       #444444;
+  --clr-caption:       ${V.figCaption};
   --clr-sidebar-text:  ${V.calloutText};
   --clr-bg-page:       ${V.pageBg};
   --clr-bg-sidebar:    ${V.calloutBg};
-  --clr-bg-rtgb:       #FDF3E7;
+  --clr-bg-rtgb:       #FFF8E1;
   --clr-bg-pause:      #E8F4F8;
   --clr-bg-activity:   #EEF7EE;
-  --clr-bg-threads:    #F0EBF8;
+  --clr-bg-threads:    #FDF3E7;
+  --clr-bg-bridge:     #E8F5E9;
+  --clr-bg-note:       #EEF7FA;
   --clr-key-term:      ${V.keyTerm};
   --col-width:         720px;
   --page-pad-x:        clamp(16px, 5vw, 48px);
@@ -1609,8 +1617,8 @@ p {
 p + p { text-indent: 1.5em; }
 h2 + p, h3 + p, .callout + p, figure + p,
 .activity-box + p, .pause-ponder + p, .rtgb-box + p,
-.threads-box + p, .scientist-block + p,
-.example-block + p, .knowledge-hub + p { text-indent: 0; }
+.threads-box + p, .scientist-block + p, .bridge-box + p,
+.note-box + p, .example-block + p, .knowledge-hub + p { text-indent: 0; }
 
 /* SECTION HEADINGS */
 h2.section-heading {
@@ -1692,7 +1700,8 @@ figure.inline-left {
 /* ACTIVITY BOX */
 .activity-box {
   background: var(--clr-bg-activity);
-  border: 1px solid #B8DDB8;
+  border: 1px solid #A5D6A7;
+  border-top: 3px solid var(--clr-orange);
   border-radius: 8px;
   padding: 1.2rem 1.4rem;
   margin: 1.5rem 0;
@@ -1701,10 +1710,10 @@ figure.inline-left {
   font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--clr-purple-toc);
+  color: var(--clr-orange);
   margin-bottom: 0.5rem;
   text-decoration: underline;
-  text-decoration-color: var(--clr-purple-light);
+  text-decoration-color: #F5A843;
 }
 .activity-box p { text-indent: 0 !important; margin-bottom: 0.5rem; }
 
@@ -1736,7 +1745,8 @@ figure.inline-left {
 /* READY TO GO BEYOND */
 .rtgb-box {
   background: var(--clr-bg-rtgb);
-  border: 1px solid #F0C080;
+  border: 1px solid #FFD54F;
+  border-left: 4px solid #FFB300;
   border-radius: 8px;
   padding: 1.2rem 1.4rem;
   margin: 1.8rem 0;
@@ -1745,7 +1755,7 @@ figure.inline-left {
   font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--clr-orange);
+  color: #E65100;
   margin-bottom: 0.4rem;
 }
 .rtgb-box p { text-indent: 0 !important; font-size: 0.9rem; margin-bottom: 0.5rem; }
@@ -1753,7 +1763,8 @@ figure.inline-left {
 /* THREADS OF CURIOSITY */
 .threads-box {
   background: var(--clr-bg-threads);
-  border: 1px solid #C8A8DC;
+  border: 1px solid #F5A843;
+  border-left: 4px solid var(--clr-orange);
   border-radius: 8px;
   padding: 1.2rem 1.4rem;
   margin: 1.8rem 0;
@@ -1762,10 +1773,65 @@ figure.inline-left {
   font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--clr-purple-dark);
+  color: #A84D00;
   margin-bottom: 0.6rem;
 }
 .threads-box p { text-indent: 0 !important; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+/* BRIDGING SCIENCE AND SOCIETY */
+.bridge-box {
+  background: var(--clr-bg-bridge);
+  border: 1px solid #A5D6A7;
+  border-left: 4px solid #388E3C;
+  border-radius: 0 8px 8px 0;
+  padding: 1.2rem 1.4rem;
+  margin: 1.8rem 0;
+}
+.bridge-box__heading {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1B5E20;
+  margin-bottom: 0.5rem;
+}
+.bridge-box p { text-indent: 0 !important; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+/* NOTE BOX */
+.note-box {
+  background: var(--clr-bg-note);
+  border: 1px solid #00ACC1;
+  border-left: 4px solid #00ACC1;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 1.2rem 0;
+}
+.note-box__label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #006064;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.3rem;
+}
+.note-box p { text-indent: 0 !important; font-size: 0.9rem; text-align: left; margin-bottom: 0.3rem; }
+
+/* CROSS-REFERENCE BADGE */
+.cross-ref {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #1565C0;
+  background: #E3F2FD;
+  border: 1px solid #90CAF9;
+  border-radius: 4px;
+  padding: 2px 5px;
+  vertical-align: middle;
+  white-space: nowrap;
+  margin: 0 2px;
+}
 
 /* PAUSE AND PONDER */
 .pause-ponder {
@@ -1859,8 +1925,15 @@ figure.inline-left {
   border-left: 3px solid var(--clr-purple-toc);
 }
 .question-text { font-weight: 600; text-align: left; }
-.answer-block { margin: 0.3rem 0 1rem 1.5rem; color: var(--clr-answer-head); }
-.answer-block p { text-align: left; text-indent: 0 !important; }
+.answer-block {
+  background: #EBF5FB;
+  border-left: 4px solid var(--clr-answer-head);
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.4rem;
+}
+.answer-block p { text-align: left; text-indent: 0 !important; font-size: 0.92rem; margin-bottom: 0.4rem; line-height: 1.65; }
+.answer-block strong { color: var(--clr-answer-head); }
 .mcq-option { font-size: 0.9rem; margin: 0.15rem 0 0.15rem 1.5rem; text-align: left; }
 
 /* MATHS */
