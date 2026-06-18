@@ -729,14 +729,14 @@ function showLanding(){document.getElementById('app').style.display='none';docum
 ───────────────────────────────────────────────────────────── */
 const THEMES={
   geography:{
-    label:'Geography -- Cyan & Navy',
+    label:'Geography -- Cyan & Navy (Contemporary India)',
     swatches:['#1a3a6b','#00838f','#e85d04','#e8f4f8'],
     vars:{chBg1:'#1a3a6b',chBg2:'#1e4d8c',chText:'#fff',
       h2Color:'#00838f',h2Border:'#00acc1',h3Color:'#1e4d8c',
       accent:'#e85d04',calloutBg:'#e8f4f8',calloutBorder:'#80deea',
-      calloutHead:'#006064',calloutText:'#01579b',
-      figCaption:'#e85d04',footer:'#1a3a6b',keyTerm:'#00838f',
-      pageBg:'#fbf5ef'}
+      calloutHead:'#006064',calloutText:'#004d4d',
+      figCaption:'#555555',footer:'#1a3a6b',keyTerm:'#00838f',
+      pageBg:'#ffffff'}
   },
   science:{
     label:'Science -- Purple & Orange (Exploration)',
@@ -1277,8 +1277,10 @@ function createFigurePlaceholder(b, index){
   <text x="${svgW/2}" y="${svgH-18}" text-anchor="middle" font-size="11" fill="#aaa">${caption}</text>
 </svg>`;
   const blob = new Blob([svg], {type:'image/svg+xml'});
-  S.imageAssets.push({filename, blob, width:svgW, height:svgH, alt, kind:'svg-placeholder', sourcePage: b.sourcePage||1});
-  return {filename, width:svgW, height:svgH, alt};
+  // Create data URI so the SVG renders in the preview iframe (blob URL context can't resolve img/ paths)
+  const svgDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  S.imageAssets.push({filename, blob, dataUri:svgDataUri, width:svgW, height:svgH, alt, kind:'svg-placeholder', sourcePage: b.sourcePage||1});
+  return {filename, dataUri:svgDataUri, width:svgW, height:svgH, alt};
 }
 
 
@@ -1346,8 +1348,9 @@ ${caption}
       const asset=createFigurePlaceholder(b,figCount);
       const loading=figCount===1?'eager':'lazy';
       figCount++;
+      const imgSrc = asset.dataUri || `img/${asset.filename}`;
       return`<figure${figClass}>
-<img src="img/${asset.filename}" loading="${loading}" decoding="async" width="${asset.width}" height="${asset.height}" alt="${escAttr(asset.alt)}">
+<img src="${imgSrc}" loading="${loading}" decoding="async" width="${asset.width}" height="${asset.height}" alt="${escAttr(asset.alt)}">
 <figcaption>${esc(cap)}</figcaption>
 </figure>`;
     }
@@ -2125,8 +2128,14 @@ async function dlZIP(){
   const zip=new JSZip();
   const root=zip.folder(slug);
 
-  // index.html
-  root.file('index.html',S.finalHTML);
+  // Swap inline data URIs → relative img/ paths for the ZIP copy (preview uses URIs, ZIP uses files)
+  let zipHTML = S.finalHTML;
+  for(const a of S.imageAssets){
+    if(a.dataUri){
+      zipHTML = zipHTML.split(a.dataUri).join('img/' + a.filename);
+    }
+  }
+  root.file('index.html', zipHTML);
 
   // css/styles.css
   root.folder('css').file('styles.css',S.finalCSS||'');
