@@ -3,61 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PDF to HTML — PW R&D Tools</title>
-<style>
-:root{--pp:#5B2D8E;--pm:#7B3FA0;--pl:#C8A8DC;--or:#E87722;--fn:'Helvetica Neue',Arial,sans-serif}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fn);background:#F8F5FC;min-height:100vh;display:flex;flex-direction:column}
-.hdr{background:linear-gradient(135deg,var(--pp) 0%,var(--pm) 100%);color:#fff;padding:2rem 2.5rem}
-.hdr h1{font-size:1.5rem;font-weight:800;margin-bottom:.3rem}
-.hdr p{font-size:.82rem;opacity:.8}
-.main{flex:1;padding:2.5rem;max-width:860px;margin:0 auto;width:100%}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.25rem;margin-top:1.5rem}
-.card{background:#fff;border:1px solid #DDD0EE;border-radius:12px;padding:1.75rem;transition:all .2s;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:.75rem}
-.card:hover{border-color:var(--pp);box-shadow:0 4px 20px rgba(91,45,142,.12);transform:translateY(-2px)}
-.card-icon{font-size:2.5rem}
-.card-title{font-size:1.1rem;font-weight:700;color:var(--pp)}
-.card-desc{font-size:.82rem;color:#6B6B6B;line-height:1.6}
-.card-tag{display:inline-block;font-size:.65rem;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:20px;background:#EDE0F5;color:var(--pp);margin-top:.25rem;align-self:flex-start}
-.card.orange .card-title{color:var(--or)}
-.card.orange .card-tag{background:#FDF3E7;color:var(--or)}
-.card.orange:hover{border-color:var(--or);box-shadow:0 4px 20px rgba(232,119,34,.12)}
-.sec-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#9B8AAE;margin-bottom:.25rem}
-h2{font-size:1rem;font-weight:700;color:#1A1A1A}
-footer{text-align:center;padding:1.5rem;font-size:.72rem;color:#9B8AAE}
-</style>
+<title>Chapter 1 — Sample Chapter</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/chapter.js" defer></script>
 </head>
 <body>
-
-<header class="hdr">
-  <h1>📚 PW R&D — PDF to HTML Tools</h1>
-  <p>Next-Gen Media &amp; Content Development &nbsp;·&nbsp; Textbook Digital Edition Pipeline</p>
+<header class="chapter-header" role="banner">
+  <div class="chapter-header__left">
+    <div class="chapter-header__eyebrow">Science · Grade 10</div>
+    <h1 class="chapter-header__title">Sample Chapter</h1>
+  </div>
+  <div class="chapter-header__right">
+    <span class="chapter-header__chapter-label">Chapter</span>
+    <span class="chapter-header__number">1</span>
+  </div>
 </header>
 
-<main class="main">
-  <div class="sec-lbl">Tools</div>
-  <h2>Choose a tool to get started</h2>
+<main class="chapter-wrap" id="main-content">
+  <h2 class="section-heading">1.1 Sample Section</h2>
 
-  <div class="grid">
+  <p>This is selectable chapter text. The actual converter will fill this area from Claude/IDML extracted blocks.</p>
 
-    <a href="chapter-converter.html" class="card">
-      <div class="card-icon">⚙️</div>
-      <div class="card-title">Chapter Converter</div>
-      <div class="card-desc">Convert any chapter PDF or IDML file into a fully styled HTML page matching the printed textbook. Supports PDF-only, IDML-only, or both together.</div>
-      <span class="card-tag">PDF / IDML → HTML</span>
-    </a>
+  <figure>
+    <img src="img/fig-001.webp" loading="lazy" decoding="async" width="1000" height="1400" alt="Sample figure image">
+    <figcaption>Fig. 1.1: Sample figure</figcaption>
+  </figure>
 
-    <a href="ch01-exploration/ch01/index.html" class="card orange">
-      <div class="card-icon">📖</div>
-      <div class="card-title">Chapter 1 — Exploration</div>
-      <div class="card-desc">Grade 9 Science · Entering the World of Secondary Science. The reference chapter — fully styled with purple header, all callout boxes, and embedded images.</div>
-      <span class="card-tag">Live Preview</span>
-    </a>
-
+  <div class="table-wrap">
+    <table class="content-table">
+      <caption>Sample Table</caption>
+      <thead>
+        <tr><th>Column A</th><th>Column B</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Value A</td><td>Value B</td></tr>
+      </tbody>
+    </table>
   </div>
+
+  <footer class="book-footer" role="contentinfo">
+    <span class="book-footer__label">Book | Grade | Subject</span>
+  </footer>
 </main>
-
-<footer>Next-Gen Media &amp; Content Development · PW R&D Team</footer>
-
 </body>
 </html>
