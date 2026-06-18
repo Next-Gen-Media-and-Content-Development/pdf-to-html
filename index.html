@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NGMC HTML Converter</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="stylesheet" href="css/converter.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     LANDING PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="landing">
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">N</div>
+      <div>
+        <div class="nav-logo-text">NGMC HTML Converter</div>
+      </div>
+    </a>
+    <div class="nav-pill">v2.0</div>
+    <button class="nav-cta" onclick="showApp()">Open Converter →</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      NGMC · PW R&amp;D Team
+    </div>
+    <h1>PDF &amp; IDML to<br><em>Production HTML</em></h1>
+    <p class="hero-sub">Convert NCERT textbook chapters into phone-fast, selectable, spec-compliant HTML. ZIP output with correct folder structure, WebP images, and real KaTeX maths — ready to deploy.</p>
+    <div class="hero-actions">
+      <button class="btn-hero primary" onclick="showApp()">⚡ Start Converting</button>
+      <a href="#how" class="btn-hero secondary">How it works</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-visual-bar">
+      <span class="hero-visual-dot"></span>
+      <span class="hero-visual-dot"></span>
+      <span class="hero-visual-dot"></span>
+    </div>
+    <div class="hero-visual-code">
+<span class="cm">/* Output folder structure */</span>
+ch01-resource-development/
+  <span class="kw">index.html</span>          <span class="cm">← real text</span>
+  css/<span class="str">styles.css</span>      <span class="cm">← justified</span>
+  js/<span class="str">chapter.js</span>       <span class="cm">← deferred</span>
+  img/<span class="str">fig-001.webp</span>    <span class="cm">← lazy load</span>
+  img/<span class="str">fig-002.webp</span>
+  fonts/<span class="str">README.txt</span>
+  <span class="kw">_headers</span>           <span class="cm">← cache rules</span>
+  data/<span class="str">blocks.json</span>
+  data/<span class="str">qa-report.json</span>
+
+<span class="cm">/* KaTeX math — selectable */</span>
+\[ E = mc^2 \]
+
+<span class="cm">/* Performance target */</span>
+LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</span>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="features-inner">
+    <div class="section-label">What it does</div>
+    <h2 class="section-title">Everything the spec demands</h2>
+    <p class="section-sub">Built against the PDF→HTML Conversion Standard. Every output tick passes the Step-7 QA gate.</p>
+    <div class="feat-grid">
+      <div class="feat">
+        <span class="feat-icon">📐</span>
+        <div class="feat-title">Spec-compliant ZIP folder</div>
+        <div class="feat-body">chapter-slug/index.html + css/styles.css + js/chapter.js + img/ + fonts/ + _headers + data/qa-report.json — exactly what the standard specifies.</div>
+        <span class="feat-badge">Required</span>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">🖼️</span>
+        <div class="feat-title">WebP images — lazy loaded</div>
+        <div class="feat-body">Every figure extracted as WebP. Cover image loads eager; all others lazy. Max ~1600px long edge. Full-width responsive inside figures.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">∑</span>
+        <div class="feat-title">KaTeX maths — selectable</div>
+        <div class="feat-body">Inline \( … \) and display \[ … \] equations rendered with KaTeX auto-render. data-latex stored on each container. Copy yields LaTeX + delimiters.</div>
+        <span class="feat-badge">Required</span>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">📱</span>
+        <div class="feat-title">Full-width mobile layout</div>
+        <div class="feat-body">Page container = viewport width. Single column, no fixed narrow card. Sidebars stack in reading order on narrow screens. Tested 320→2560px.</div>
+        <span class="feat-badge">Required</span>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">🔤</span>
+        <div class="feat-title">Justified body + hyphenation</div>
+        <div class="feat-body">Body prose justified with hyphens:auto. Headings, captions, lists stay left-aligned. key-term colour sampled from source PDF via AI vision.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">🤖</span>
+        <div class="feat-title">Claude AI vision reading</div>
+        <div class="feat-body">Each PDF page rasterised to WebP and sent to Claude for structured JSON extraction — blocks in reading order including sidebars, callouts, tables, maths.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">🎨</span>
+        <div class="feat-title">IDML design tokens</div>
+        <div class="feat-body">CMYK swatches parsed from Resources/Graphic.xml → CSS custom properties. Paragraph styles mapped to semantic HTML roles.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">🗂️</span>
+        <div class="feat-title">14 callout types</div>
+        <div class="feat-body">think-it-over, pause-ponder, meet-scientist, knowledge-hub, activity, example, threads-curiosity, bridging-science, at-a-glance, and more — all styled as per spec.</div>
+      </div>
+      <div class="feat">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">Performance QA report</div>
+        <div class="feat-body">data/qa-report.json ships in the ZIP with image count, WebP-only flag, estimated sizes, and spec-checklist pass/fail status.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="spec-section">
+  <div class="section-label">Spec compliance</div>
+  <h2 class="section-title">Step-7 QA gate</h2>
+  <p class="section-sub">Every conversion is measured against the standard before download.</p>
+  <div class="spec-grid">
+    <ul class="spec-list">
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Folder of separate files</div><div class="spec-detail">No single-file bundle, no base64 assets in HTML</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">All images WebP, lazy loaded</div><div class="spec-detail">Cover eager; all others loading="lazy" decoding="async"</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">KaTeX maths with data-latex</div><div class="spec-detail">Auto-render, offline-capable, copy yields LaTeX</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Real selectable text throughout</div><div class="spec-detail">user-select:text; no custom ::selection colour</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Body prose justified + hyphenated</div><div class="spec-detail">text-align:justify; hyphens:auto on p elements only</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">JS deferred; one external CSS</div><div class="spec-detail">No inline style/script blobs in index.html</div></div></li>
+    </ul>
+    <ul class="spec-list">
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">_headers cache rules included</div><div class="spec-detail">CSS/JS/img far-future cache; HTML must-revalidate</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Mobile-first full viewport width</div><div class="spec-detail">Page container = page width; no pinch-zoom needed</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Single continuous column</div><div class="spec-detail">No page-break dividers; one scrollable document</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Tables scroll in-box</div><div class="spec-detail">overflow-x:auto on .table-wrap; page never widens</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">Chrome/artifacts stripped</div><div class="spec-detail">Running headers, page numbers, sluglines excluded</div></div></li>
+      <li><span class="spec-icon">✓</span><div><div class="spec-label">QA report in ZIP</div><div class="spec-detail">data/qa-report.json with all spec checks documented</div></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="section-label">Workflow</div>
+    <h2 class="section-title" style="margin-bottom:2.5rem">Five steps to a chapter ZIP</h2>
+    <div class="steps-row">
+      <div class="step"><div class="step-num">1</div><div class="step-title">Upload files</div><div class="step-body">PDF only, IDML only, or both for best quality</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-title">API key</div><div class="step-body">Paste your Claude key or Cloudflare proxy URL</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-title">Chapter info</div><div class="step-body">Number, title, grade, subject, book</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-title">Convert</div><div class="step-body">Claude reads each page; IDML parsed for tokens</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-title">Download ZIP</div><div class="step-body">Preview output; download spec-compliant ZIP</div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="landing-footer">
+  <strong>NGMC HTML Converter</strong> · PW R&amp;D Team · Built against the PDF→HTML Conversion Standard v2
+</footer>
+
+</div><!-- /landing -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONVERTER APP
+═══════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+<nav class="app-nav">
+  <div class="app-brand">
+    <div class="app-brand-mark">N</div>
+    <div class="app-brand-text">NGMC Converter</div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-1"><span class="tnum">1</span>Files</div>
+    <div class="tab-sep">›</div>
+    <div class="tab" id="tab-2"><span class="tnum">2</span>API Key</div>
+    <div class="tab-sep">›</div>
+    <div class="tab" id="tab-3"><span class="tnum">3</span>Chapter Info</div>
+    <div class="tab-sep">›</div>
+    <div class="tab" id="tab-4"><span class="tnum">4</span>Convert</div>
+    <div class="tab-sep">›</div>
+    <div class="tab" id="tab-5"><span class="tnum">5</span>Download ZIP</div>
+  </div>
+  <button class="app-home" onclick="showLanding()">← Back to home</button>
+</nav>
+
+<div class="app-body">
+
+<!-- STEP 1: FILES -->
+<div class="panel active" id="panel-1">
+  <div class="inner">
+    <div class="panel-title">What files do you have?</div>
+    <p class="panel-sub">Choose your input type. PDF+IDML gives best quality — AI vision reads layout, IDML provides exact font/colour tokens.</p>
+    <div class="modes">
+      <div class="mc" id="mc-pdf" onclick="setMode('pdf')">
+        <div class="mc-icon">📄</div>
+        <div class="mc-title">PDF only</div>
+        <div class="mc-sub">Claude reads each page visually. Good for NCERT/external sources.</div>
+        <span class="mc-tag tag-good">Good</span>
+      </div>
+      <div class="mc" id="mc-idml" onclick="setMode('idml')">
+        <div class="mc-icon">🎨</div>
+        <div class="mc-title">IDML only</div>
+        <div class="mc-sub">Text &amp; styles from InDesign file. No AI vision needed.</div>
+        <span class="mc-tag tag-ok">No vision</span>
+      </div>
+      <div class="mc" id="mc-both" onclick="setMode('both')">
+        <div class="mc-icon">📄+🎨</div>
+        <div class="mc-title">PDF + IDML</div>
+        <div class="mc-sub">Best mode: AI vision + exact design tokens from InDesign.</div>
+        <span class="mc-tag tag-best">Best</span>
+      </div>
+    </div>
+
+    <div id="pdf-area" style="display:none">
+      <div class="sl">PDF file</div>
+      <div class="dz" id="dz-pdf" onclick="document.getElementById('inp-pdf').click()">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop PDF here or click to browse</div>
+        <div class="dz-sub">Chapter PDF — one chapter per conversion</div>
+      </div>
+      <input type="file" id="inp-pdf" accept=".pdf" style="display:none">
+      <div class="chip" id="chip-pdf">
+        <span class="dot pdf"></span>
+        <span class="chip-name" id="cpn"></span>
+        <span class="chip-sz" id="cps"></span>
+        <button class="chip-x" onclick="clearF('pdf')">✕</button>
+      </div>
+    </div>
+
+    <div id="idml-area" style="display:none">
+      <div class="sl">IDML file</div>
+      <div class="dz" id="dz-idml" onclick="document.getElementById('inp-idml').click()">
+        <div class="dz-icon">🎨</div>
+        <div class="dz-title">Drop IDML here or click to browse</div>
+        <div class="dz-sub">Adobe InDesign IDML package</div>
+      </div>
+      <input type="file" id="inp-idml" accept=".idml" style="display:none">
+      <div class="chip" id="chip-idml">
+        <span class="dot idml"></span>
+        <span class="chip-name" id="cin"></span>
+        <span class="chip-sz" id="cis"></span>
+        <button class="chip-x" onclick="clearF('idml')">✕</button>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:1.5rem">
+      <button class="btn pri" id="btn-1" onclick="goStep(2)" disabled>Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: API KEY -->
+<div class="panel" id="panel-2">
+  <div class="inner">
+    <div class="panel-title">Connect Claude AI</div>
+    <p class="panel-sub">PDF modes use Claude's vision API to read each page in reading order. IDML-only mode skips this step.</p>
+    <div id="key-needed-block">
+      <div class="key-box">
+        <h3>🔑 Anthropic API Key</h3>
+        <p>Key starts with <code>sk-ant-</code>. Used only to call Claude for page reading — never stored or sent elsewhere.</p>
+        <div class="key-row">
+          <input type="password" class="key-inp" id="api-key" placeholder="sk-ant-api03-…" oninput="checkKey()">
+          <button class="btn" onclick="toggleKey()">👁</button>
+        </div>
+        <div class="info err" id="key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>sk-ant-</code> and be at least 30 characters.</div>
+      </div>
+      <div class="ff" style="margin-bottom:.85rem">
+        <label>Cloudflare Proxy URL <span style="font-weight:400;text-transform:none">(optional — paste if you use a CORS proxy)</span></label>
+        <input type="text" id="proxy-url" placeholder="https://your-worker.workers.dev/">
+      </div>
+    </div>
+    <div id="key-skip-block" style="display:none">
+      <div class="info green">✓ No API key needed for IDML-only mode. Continue to chapter info.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(1)">← Back</button>
+      <button class="btn pri" id="btn-2" onclick="goStep(3)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3: CHAPTER INFO -->
+<div class="panel" id="panel-3">
+  <div class="inner">
+    <div class="panel-title">Chapter Information</div>
+    <p class="panel-sub">These values populate the chapter header and determine the colour theme applied to the output.</p>
+    <div id="meta-extract-banner" class="info blue" style="display:none"></div>
+    <div class="fgrid">
+      <div class="ff" style="grid-column:1/-1">
+        <label>Chapter Title</label>
+        <input type="text" id="ch-title" placeholder="e.g. Resource and Development" oninput="updateThemePreview()">
+      </div>
+      <div class="ff">
+        <label>Chapter Number</label>
+        <input type="number" id="ch-num" placeholder="e.g. 6" min="1" max="99">
+      </div>
+      <div class="ff">
+        <label>Grade</label>
+        <input type="text" id="ch-grade" placeholder="e.g. Grade 9" value="">
+      </div>
+      <div class="ff">
+        <label>Subject</label>
+        <select id="ch-subject" onchange="updateThemePreview()">
+          <option value="Geography">Geography / Social Science</option>
+          <option value="Science">Science</option>
+          <option value="History">History / Civics</option>
+          <option value="Economics">Economics</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="English">English</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="ff">
+        <label>Book Title</label>
+        <input type="text" id="ch-book" value="Contemporary India">
+      </div>
+    </div>
+    <div style="background:var(--canvas);border:1px solid var(--border);border-radius:7px;padding:.75rem 1rem;margin-bottom:.85rem">
+      <div style="font-size:.62rem;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.45rem">Detected colour theme</div>
+      <div id="theme-label" style="font-size:.82rem;font-weight:600;margin-bottom:.35rem">Geography — Cyan &amp; Navy</div>
+      <div class="theme-preview" id="theme-swatches"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(2)">← Back</button>
+      <button class="btn pri" onclick="startConversion()">Start Conversion →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4: CONVERTING -->
+<div class="panel" id="panel-4">
+  <div class="inner">
+    <div class="panel-title">Converting…</div>
+    <div id="mode-banner" class="info blue" style="margin-bottom:.85rem"></div>
+    <div class="prog">
+      <div class="prog-top"><span id="pmsg">Initialising…</span><span id="ppct">0%</span></div>
+      <div class="prog-track"><div class="prog-bar" id="pbar"></div></div>
+      <div class="prog-msg" id="psub"></div>
+    </div>
+    <div class="info err" id="err-box"></div>
+    <div id="th-area" style="display:none">
+      <div class="sl">Pages</div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div class="sl" id="log-lbl" style="display:none">Conversion log</div>
+    <div class="log" id="log"></div>
+    <div class="btn-row">
+      <button class="btn" id="btn-back4" onclick="goStep(3)">← Back</button>
+      <button class="btn pri" id="btn-4" onclick="goStep(5)" disabled>View Result →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: RESULT -->
+<div class="panel" id="panel-5">
+  <div class="inner" style="max-width:960px">
+    <div class="panel-title">Preview &amp; Download</div>
+    <div class="info green" id="res-info" style="margin-bottom:.85rem"></div>
+    <div class="qa-grid" id="qa-grid" style="display:none"></div>
+    <div class="res-card">
+      <div class="res-head">
+        <span>📦</span>
+        <span class="res-title" id="res-title">Chapter</span>
+        <button class="btn pri" onclick="dlZIP()">⬇ Download ZIP</button>
+        <button class="btn" onclick="cpHTML()">Copy index.html</button>
+      </div>
+      <iframe class="res-frame" id="res-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="startOver()">↩ Convert another chapter</button>
+      <button class="btn pri" onclick="dlZIP()">⬇ Download ZIP</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app-body -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script src="js/converter.js" defer></script>
+</body>
+</html>
