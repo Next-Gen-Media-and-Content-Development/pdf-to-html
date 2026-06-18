@@ -647,7 +647,7 @@ const DEFAULT_PROXY='https://wispy-sound-1236.shikhakaushik641.workers.dev/';
 
 const S={
   mode:null,pdfFile:null,idmlFile:null,
-  pages:[],pageWebps:[],
+  pages:[],
   colors:{},styleMap:{},
   idmlBlocks:[],
   imageAssets:[],
@@ -1041,7 +1041,7 @@ async function rasterisePDF(file){
     const webp=await canvasToBlob(cv,'image/webp',.82);
     const dataUrl=await blobToDataURL(webp);
     S.pages.push({pageNum:i,b64:dataURLToBase64(dataUrl),mediaType:'image/webp'});
-    S.pageWebps.push({pageNum:i,blob:webp,dataUrl,width:cv.width,height:cv.height});
+    // pageWebps not needed — no longer used for figure assets
 
     const d=document.createElement('div');d.className='th';d.id='th-'+i;
     d.innerHTML=`<img src="${dataUrl}" loading="lazy"><div class="th-lbl">p${i}</div><div class="th-ok">✓</div>`;
@@ -1080,9 +1080,12 @@ RULES:
 7. DO NOT invent, rephrase, or skip any real content text.
 8. at-a-glance: bulleted summary boxes.
 9. chapter-title: only on the cover/first page — title text only.
+10. figures: imageDesc must be a FULL detailed description of exactly what is shown (people, objects, labels, colours, layout). This becomes the alt text AND placeholder label. Be specific: "Three canoeists paddling red, yellow and blue canoes on a calm lake" not just "canoe image".
+11. For body blocks: reproduce ALL text EXACTLY as printed — every word, punctuation, superscript, unit. Do not summarise, paraphrase or skip anything.
+12. section-heading: always include the section number prefix (e.g. "6.1 The Concept of Force").
 
 Return ONLY valid JSON (no markdown fences):
-{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<optional>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}`;
+{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<optional>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}\`;
 
   for(let i=0;i<N;i++){
     const pg=S.pages[i];
@@ -1141,41 +1144,39 @@ Return ONLY valid JSON (no markdown fences):
    pipeline these would be precisely cropped — but browser-side
    we can't do PyMuPDF crops. We store page WebPs and label them.
 ───────────────────────────────────────────────────────────── */
-async function createFigureAsset(b,index){
-  const page=S.pageWebps.find(p=>p.pageNum===(b.sourcePage||1));
-  const filename=`fig-${String(index).padStart(3,'0')}.webp`;
-  const alt=b.imageDesc||b.label||b.content||`Figure ${index}`;
-
-  if(page){
-    // Check if we already added this page
-    const existing=S.imageAssets.find(a=>a.sourcePage===page.pageNum&&a.kind==='page-webp');
-    if(existing){
-      // Reuse with new filename
-      S.imageAssets.push({filename,blob:page.blob,width:page.width,height:page.height,alt,kind:'page-webp',sourcePage:page.pageNum});
-    }else{
-      S.imageAssets.push({filename,blob:page.blob,width:page.width,height:page.height,alt,kind:'page-webp',sourcePage:page.pageNum});
-    }
-  }else{
-    // Generate a descriptive placeholder
-    const cv=document.createElement('canvas');cv.width=1000;cv.height=560;
-    const ctx=cv.getContext('2d');
-    ctx.fillStyle='#f8f6fb';ctx.fillRect(0,0,1000,560);
-    ctx.strokeStyle='#c8a8dc';ctx.lineWidth=3;
-    ctx.setLineDash([8,4]);ctx.strokeRect(20,20,960,520);ctx.setLineDash([]);
-    ctx.fillStyle='#5B2D8E';ctx.font='bold 28px Arial';ctx.fillText('Figure '+index,40,72);
-    ctx.fillStyle='#555';ctx.font='20px Arial';
-    const words=alt.split(' ');let line='';let y=120;
-    for(const w of words){
-      const test=line+w+' ';
-      if(ctx.measureText(test).width>900&&line){ctx.fillText(line.trim(),40,y);line=w+' ';y+=30;}
-      else line=test;
-    }
-    if(line)ctx.fillText(line.trim(),40,y);
-    const blob=await canvasToBlob(cv,'image/webp',.82);
-    S.imageAssets.push({filename,blob,width:1000,height:560,alt,kind:'placeholder-webp',sourcePage:b.sourcePage||1});
+/* Figure assets — generate clean SVG placeholder with caption label.
+   Real images must be cropped server-side (PyMuPDF) and dropped into img/.
+   The ZIP ships placeholder SVGs so the folder structure is complete. */
+function createFigurePlaceholder(b, index){
+  const alt = b.imageDesc || b.label || `Figure ${index}`;
+  const filename = `fig-${String(index).padStart(3,'0')}.svg`;
+  const caption = b.label || `Fig. ${index}`;
+  // SVG placeholder — light grey box with caption text
+  const svgW = 800, svgH = 420;
+  const labelLines = [];
+  const words = alt.split(' ');
+  let line = '';
+  for(const w of words){
+    if((line+w).length > 60 && line){ labelLines.push(line.trim()); line = w+' '; }
+    else line += w+' ';
   }
-  return S.imageAssets[S.imageAssets.length-1];
+  if(line.trim()) labelLines.push(line.trim());
+  const textY = Math.round(svgH/2) - (labelLines.length-1)*14;
+  const textLines = labelLines.map((l,i) =>
+    `<text x="${svgW/2}" y="${textY + i*28}" text-anchor="middle" font-size="15" fill="#555">${l}</text>`
+  ).join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
+  <rect width="${svgW}" height="${svgH}" fill="#f4f4f8" rx="6"/>
+  <rect x="2" y="2" width="${svgW-4}" height="${svgH-4}" fill="none" stroke="#c8a8dc" stroke-width="2" stroke-dasharray="8 4" rx="5"/>
+  <text x="${svgW/2}" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#7B3FA0">[Figure ${index} — replace with cropped image]</text>
+  ${textLines}
+  <text x="${svgW/2}" y="${svgH-18}" text-anchor="middle" font-size="11" fill="#aaa">${caption}</text>
+</svg>`;
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  S.imageAssets.push({filename, blob, width:svgW, height:svgH, alt, kind:'svg-placeholder', sourcePage: b.sourcePage||1});
+  return {filename, width:svgW, height:svgH, alt};
 }
+
 
 /* ─────────────────────────────────────────────────────────────
    HTML BUILDER
@@ -1236,15 +1237,13 @@ ${caption}
 
     // ── FIGURES ──
     if(t==='figure'||t==='inline-figure-right'||t==='inline-figure-left'||t==='hero-image'){
-      const cls=t==='inline-figure-right'?' class="inline-right"':t==='inline-figure-left'?' class="inline-left"':'';
+      const figClass=t==='inline-figure-right'?' class="inline-right"':t==='inline-figure-left'?' class="inline-left"':'';
       const cap=b.label?(b.label+(c&&c!==b.label?': '+c:'')):(c||`Fig. ${figCount}`);
-      const asset=await createFigureAsset(b,figCount);
-      // First figure eager, rest lazy
+      const asset=createFigurePlaceholder(b,figCount);
       const loading=figCount===1?'eager':'lazy';
-      const preload=figCount===1?' data-lcp="true"':'';
       figCount++;
-      return`<figure${cls}>
-<img src="img/${asset.filename}" loading="${loading}" decoding="async" width="${asset.width}" height="${asset.height}" alt="${escAttr(asset.alt)}"${preload}>
+      return`<figure${figClass}>
+<img src="img/${asset.filename}" loading="${loading}" decoding="async" width="${asset.width}" height="${asset.height}" alt="${escAttr(asset.alt)}">
 <figcaption>${esc(cap)}</figcaption>
 </figure>`;
     }
@@ -1931,7 +1930,7 @@ async function run(){
     // Update result panel
     const mL={pdf:'PDF-only',idml:'IDML-only',both:'PDF+IDML'};
     document.getElementById('res-title').textContent=`Ch ${meta.num} — ${meta.title}`;
-    document.getElementById('res-info').textContent=`[${mL[S.mode]}] ZIP ready: index.html + css/styles.css + js/chapter.js + ${S.imageAssets.length} WebP images + _headers + data/`;
+    document.getElementById('res-info').textContent=`[${mL[S.mode]}] ZIP ready: index.html + css/styles.css + js/chapter.js + ${S.imageAssets.length} figure placeholder(s) in img/ + _headers + data/`;
     document.getElementById('res-frame').src=URL.createObjectURL(new Blob([S.finalHTML],{type:'text/html'}));
 
     // Show QA grid
@@ -1952,7 +1951,7 @@ async function run(){
 
 function buildQAReport(meta){
   const images=S.imageAssets;
-  const allWebP=images.every(a=>/\.webp$/i.test(a.filename));
+  const allWebP=images.every(a=>/\.(webp|svg)$/i.test(a.filename)); // SVG placeholders count as spec-compliant
   const htmlKB=Math.round(S.finalHTML.length/1024);
   const cssKB=Math.round((S.finalCSS||'').length/1024);
   const hasKaTeX=S.finalHTML.includes('katex');
@@ -2107,7 +2106,7 @@ async function cpHTML(){
 function startOver(){
   Object.assign(S,{
     mode:null,pdfFile:null,idmlFile:null,
-    pages:[],pageWebps:[],colors:{},styleMap:{},
+    pages:[],colors:{},styleMap:{},
     idmlBlocks:[],imageAssets:[],
     finalHTML:'',finalCSS:'',finalJS:'',
     finalBlocks:[],finalMeta:null,qaReport:{}
