@@ -704,7 +704,7 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
 ───────────────────────────────────────────────────────────── */
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* Default Cloudflare Worker proxy — handles CORS for browser/GitHub Pages use */
+/* Default Cloudflare Worker proxy -- handles CORS for browser/GitHub Pages use */
 const DEFAULT_PROXY='https://wispy-sound-1236.shikhakaushik641.workers.dev/';
 
 const S={
@@ -729,7 +729,7 @@ function showLanding(){document.getElementById('app').style.display='none';docum
 ───────────────────────────────────────────────────────────── */
 const THEMES={
   geography:{
-    label:'Geography — Cyan & Navy',
+    label:'Geography -- Cyan & Navy',
     swatches:['#1a3a6b','#00838f','#e85d04','#e8f4f8'],
     vars:{chBg1:'#1a3a6b',chBg2:'#1e4d8c',chText:'#fff',
       h2Color:'#00838f',h2Border:'#00acc1',h3Color:'#1e4d8c',
@@ -739,7 +739,7 @@ const THEMES={
       pageBg:'#fbf5ef'}
   },
   science:{
-    label:'Science — Purple & Orange (Exploration)',
+    label:'Science -- Purple & Orange (Exploration)',
     swatches:['#5B2D8E','#7B3FA0','#E87722','#EDE0F5'],
     vars:{chBg1:'#5B2D8E',chBg2:'#7B3FA0',chText:'#fff',
       h2Color:'#6B3A9A',h2Border:'#C8A8DC',h3Color:'#5B2D8E',
@@ -749,7 +749,7 @@ const THEMES={
       pageBg:'#FFFFFF'}
   },
   maths:{
-    label:'Mathematics — Teal & Slate',
+    label:'Mathematics -- Teal & Slate',
     swatches:['#0f4c75','#1b6ca8','#2ecc71','#f0f8ff'],
     vars:{chBg1:'#0f4c75',chBg2:'#1b6ca8',chText:'#fff',
       h2Color:'#0f4c75',h2Border:'#74b9ff',h3Color:'#0f4c75',
@@ -759,7 +759,7 @@ const THEMES={
       pageBg:'#f5fbff'}
   },
   default:{
-    label:'General — Blue & Grey',
+    label:'General -- Blue & Grey',
     swatches:['#1565c0','#1976d2','#f57c00','#e3f2fd'],
     vars:{chBg1:'#1565c0',chBg2:'#1976d2',chText:'#fff',
       h2Color:'#1565c0',h2Border:'#90caf9',h3Color:'#0d47a1',
@@ -814,9 +814,9 @@ function handleF(f,type){
   document.getElementById(type==='pdf'?'cps':'cis').textContent=fmtSz(f.size);
   document.getElementById('chip-'+type).classList.add('show');
   if(type==='pdf'){
-    // Filename → rough title ONLY (no stripping leading digits — "Chapter 6 How Forces..." must stay intact)
+    // Filename → rough title ONLY (no stripping leading digits -- "Chapter 6 How Forces..." must stay intact)
     const rawName=f.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').replace(/\s+/g,' ').trim();
-    // Try to extract chapter number from filename: "Chapter 6 …", "Ch06", "ch_6", "06-"
+    // Try to extract chapter number from filename: "Chapter 6 ...", "Ch06", "ch_6", "06-"
     const numMatch=rawName.match(/(?:chapter|ch)[.\s_-]*(\d+)/i)||rawName.match(/^(\d{1,2})[-_\s]/);
     if(numMatch){
       document.getElementById('ch-num').value=parseInt(numMatch[1],10);
@@ -848,7 +848,7 @@ async function extractMetaFromPDF(){
   const bookEl=document.getElementById('ch-book');
   const subjectEl=document.getElementById('ch-subject');
   const banner=document.getElementById('meta-extract-banner');
-  if(banner){banner.style.display='block';banner.textContent='⏳ Reading chapter info from PDF…';}
+  if(banner){banner.style.display='block';banner.textContent='⏳ Reading chapter info from PDF...';}
 
   try{
     // Rasterise only page 1 at low res for fast meta extraction
@@ -871,7 +871,7 @@ async function extractMetaFromPDF(){
         model:'claude-sonnet-4-6',
         max_tokens:512,
         system:`You extract chapter metadata from a textbook cover or first page.
-Return ONLY valid JSON — no markdown, no explanation:
+Return ONLY valid JSON -- no markdown, no explanation:
 {
   "chapterNum": <integer or null>,
   "chapterTitle": "<clean title string, no 'Chapter N' prefix>",
@@ -897,7 +897,7 @@ Rules:
     let meta;
     try{meta=JSON.parse(raw)}catch{const m=raw.match(/\{[\s\S]*\}/);meta=m?JSON.parse(m[0]):{};}
 
-    // Apply extracted values — only override if we got something real
+    // Apply extracted values -- only override if we got something real
     if(meta.chapterNum!=null)numEl.value=parseInt(meta.chapterNum,10);
     if(meta.chapterTitle)titleEl.value=meta.chapterTitle.trim();
     if(meta.grade){gradeEl.value=meta.grade.trim();}
@@ -910,9 +910,9 @@ Rules:
       }
     }
     updateThemePreview();
-    if(banner){banner.style.display='block';banner.className='info green';banner.textContent='✓ Chapter info auto-filled from PDF — review and correct if needed.';}
+    if(banner){banner.style.display='block';banner.className='info green';banner.textContent='✓ Chapter info auto-filled from PDF -- review and correct if needed.';}
   }catch(e){
-    if(banner){banner.style.display='block';banner.className='info orange';banner.textContent='⚠ Could not auto-read PDF metadata — please fill in manually. ('+e.message+')';}
+    if(banner){banner.style.display='block';banner.className='info orange';banner.textContent='⚠ Could not auto-read PDF metadata -- please fill in manually. ('+e.message+')';}
     console.warn('Meta extract failed:',e);
   }
 }
@@ -989,7 +989,7 @@ function startConversion(){
   setTimeout(()=>{
     const banner=document.getElementById('mode-banner');
     const modeLabels={pdf:'📄 PDF-only mode',idml:'🎨 IDML-only mode',both:'📄+🎨 PDF + IDML mode'};
-    if(banner)banner.textContent=modeLabels[S.mode]||'Converting…';
+    if(banner)banner.textContent=modeLabels[S.mode]||'Converting...';
     const b4=document.getElementById('btn-back4');
     const b5=document.getElementById('btn-4');
     if(b4)b4.disabled=true;
@@ -1039,7 +1039,7 @@ function slugify(s){return String(s||'chapter').toLowerCase().replace(/[^a-z0-9]
    IDML PARSING
 ───────────────────────────────────────────────────────────── */
 async function parseIDML(file){
-  log('Parsing IDML…');
+  log('Parsing IDML...');
   const zip=await JSZip.loadAsync(file);
 
   // Parse colours from Graphic.xml
@@ -1125,7 +1125,7 @@ function blobToDataURL(blob){
 function dataURLToBase64(dataUrl){return dataUrl.split(',')[1]||''}
 
 async function rasterisePDF(file){
-  log('Loading PDF…');
+  log('Loading PDF...');
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   const N=pdf.numPages;
@@ -1135,7 +1135,7 @@ async function rasterisePDF(file){
   document.getElementById('thumbs').innerHTML='';
 
   for(let i=1;i<=N;i++){
-    setP(8+(i/N)*22,`Rasterising page ${i}/${N}…`);
+    setP(8+(i/N)*22,`Rasterising page ${i}/${N}...`);
     const page=await pdf.getPage(i);
     // 1.8x scale → ~130 DPI on typical A4. Good for AI vision; cap to avoid OOM.
     const vp=page.getViewport({scale:1.8});
@@ -1145,7 +1145,7 @@ async function rasterisePDF(file){
     const webp=await canvasToBlob(cv,'image/webp',.82);
     const dataUrl=await blobToDataURL(webp);
     S.pages.push({pageNum:i,b64:dataURLToBase64(dataUrl),mediaType:'image/webp'});
-    // pageWebps not needed — no longer used for figure assets
+    // pageWebps not needed -- no longer used for figure assets
 
     const d=document.createElement('div');d.className='th';d.id='th-'+i;
     d.innerHTML=`<img src="${dataUrl}" loading="lazy"><div class="th-lbl">p${i}</div><div class="th-ok">✓</div>`;
@@ -1167,7 +1167,7 @@ async function readPages(apiKey){
 
 Identify EVERY content block in the correct LINEAR reading order (left-to-right, top-to-bottom; margin sidebars drop in near the paragraph they sit beside).
 
-BLOCK TYPES — use EXACTLY these strings:
+BLOCK TYPES -- use EXACTLY these strings:
 body | section-heading | figure | inline-figure-right | inline-figure-left | hero-image |
 math-display | math-inline | table | knowledge-hub | question | answer | mcq-option |
 example | activity | pause-ponder | think-it-over | threads-curiosity | meet-scientist |
@@ -1183,18 +1183,18 @@ RULES:
 6. DO NOT include: running headers, page numbers, .indd sluglines, watermarks, crop marks.
 7. DO NOT invent, rephrase, or skip any real content text.
 8. at-a-glance: bulleted summary boxes.
-9. chapter-title: only on the cover/first page — title text only.
+9. chapter-title: only on the cover/first page -- title text only.
 10. figures: imageDesc must be a FULL detailed description of exactly what is shown (people, objects, labels, colours, layout). This becomes the alt text AND placeholder label. Be specific: "Three canoeists paddling red, yellow and blue canoes on a calm lake" not just "canoe image".
-11. For body blocks: reproduce ALL text EXACTLY as printed — every word, punctuation, superscript, unit. Do not summarise, paraphrase or skip anything.
+11. For body blocks: reproduce ALL text EXACTLY as printed -- every word, punctuation, superscript, unit. Do not summarise, paraphrase or skip anything.
 12. section-heading: always include the section number prefix (e.g. "6.1 The Concept of Force").
 
 Return ONLY valid JSON (no markdown fences):
-{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<optional>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}\`;
+{"pageNum":<n>,"blocks":[{"type":"<t>","content":"<text>","label":"<optional>","subtype":"<h2|h3>","hasImage":<bool>,"imageDesc":"<desc>"}]}${colorHint}`;
 
   for(let i=0;i<N;i++){
     const pg=S.pages[i];
     document.getElementById('th-'+pg.pageNum)?.classList.add('proc');
-    setP(30+(i/N)*55,`Claude reading page ${pg.pageNum}/${N}…`);
+    setP(30+(i/N)*55,`Claude reading page ${pg.pageNum}/${N}...`);
     try{
       const PROXY=window.ANTHROPIC_PROXY||DEFAULT_PROXY;
       const endpoint=PROXY;
@@ -1209,7 +1209,7 @@ Return ONLY valid JSON (no markdown fences):
           system:SYS,
           messages:[{role:'user',content:[
             {type:'image',source:{type:'base64',media_type:pg.mediaType,data:pg.b64}},
-            {type:'text',text:`Page ${pg.pageNum} of ${N}. Extract ALL content blocks as JSON. Be exhaustive — nothing should be missing.`}
+            {type:'text',text:`Page ${pg.pageNum} of ${N}. Extract ALL content blocks as JSON. Be exhaustive -- nothing should be missing.`}
           ]}]
         })
       });
@@ -1245,17 +1245,17 @@ Return ONLY valid JSON (no markdown fences):
    FIGURE ASSET CREATION
    Uses the source page WebP as the figure asset.
    The img/ files in the ZIP are the page WebPs; in a real
-   pipeline these would be precisely cropped — but browser-side
+   pipeline these would be precisely cropped -- but browser-side
    we can't do PyMuPDF crops. We store page WebPs and label them.
 ───────────────────────────────────────────────────────────── */
-/* Figure assets — generate clean SVG placeholder with caption label.
+/* Figure assets -- generate clean SVG placeholder with caption label.
    Real images must be cropped server-side (PyMuPDF) and dropped into img/.
    The ZIP ships placeholder SVGs so the folder structure is complete. */
 function createFigurePlaceholder(b, index){
   const alt = b.imageDesc || b.label || `Figure ${index}`;
   const filename = `fig-${String(index).padStart(3,'0')}.svg`;
   const caption = b.label || `Fig. ${index}`;
-  // SVG placeholder — light grey box with caption text
+  // SVG placeholder -- light grey box with caption text
   const svgW = 800, svgH = 420;
   const labelLines = [];
   const words = alt.split(' ');
@@ -1272,7 +1272,7 @@ function createFigurePlaceholder(b, index){
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">
   <rect width="${svgW}" height="${svgH}" fill="#f4f4f8" rx="6"/>
   <rect x="2" y="2" width="${svgW-4}" height="${svgH-4}" fill="none" stroke="#c8a8dc" stroke-width="2" stroke-dasharray="8 4" rx="5"/>
-  <text x="${svgW/2}" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#7B3FA0">[Figure ${index} — replace with cropped image]</text>
+  <text x="${svgW/2}" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#7B3FA0">[Figure ${index} -- replace with cropped image]</text>
   ${textLines}
   <text x="${svgW/2}" y="${svgH-18}" text-anchor="middle" font-size="11" fill="#aaa">${caption}</text>
 </svg>`;
@@ -1454,7 +1454,7 @@ ${lines.slice(b.label?0:1).map(l=>`<p>${processInlineMarkup(l)}</p>`).join('')}
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Chapter ${esc(meta.num)} — ${esc(meta.title)}</title>
+<title>Chapter ${esc(meta.num)} -- ${esc(meta.title)}</title>
 ${katexScript}
 <link rel="stylesheet" href="css/styles.css">
 <script src="js/chapter.js" defer><\/script>
@@ -1482,7 +1482,7 @@ ${bodyHTML}
 }
 
 /* ─────────────────────────────────────────────────────────────
-   CSS BUILDER — spec-compliant
+   CSS BUILDER -- spec-compliant
 ───────────────────────────────────────────────────────────── */
 function buildChapterCSS(V){
 return`:root {
@@ -1533,7 +1533,7 @@ body, p, li, h1, h2, h3, h4, figcaption, td, th {
   user-select: text;
 }
 
-/* LAYOUT — full width, centred column */
+/* LAYOUT -- full width, centred column */
 .chapter-wrap {
   width: 100%;
   max-width: var(--col-width);
@@ -1596,7 +1596,7 @@ body, p, li, h1, h2, h3, h4, figcaption, td, th {
   line-height: 1;
 }
 
-/* BODY TEXT — justified + indent */
+/* BODY TEXT -- justified + indent */
 p {
   margin-bottom: 1rem;
   text-align: justify;
@@ -1909,7 +1909,7 @@ img { max-width: 100%; height: auto; }
    JS BUILDER
 ───────────────────────────────────────────────────────────── */
 function buildChapterJS(){
-return`/* chapter.js — NGMC HTML Converter output
+return`/* chapter.js -- NGMC HTML Converter output
    Handles: KaTeX auto-render, LaTeX copy, zoomable figures */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1994,46 +1994,46 @@ async function run(){
   errEl.classList.remove('show');
 
   try{
-    setP(0,'Starting…');
+    setP(0,'Starting...');
     let allBlocks=[];
 
     if(S.mode==='pdf'){
-      setP(5,'Rasterising PDF…');
+      setP(5,'Rasterising PDF...');
       await rasterisePDF(S.pdfFile);
-      setP(30,'Sending pages to Claude…');
+      setP(30,'Sending pages to Claude...');
       const res=await readPages(apiKey);
       for(const pg of res)if(pg.blocks)allBlocks=allBlocks.concat(pg.blocks);
     }
     else if(S.mode==='idml'){
-      setP(10,'Parsing IDML…');
+      setP(10,'Parsing IDML...');
       await parseIDML(S.idmlFile);
-      setP(85,'Building HTML…');
+      setP(85,'Building HTML...');
       allBlocks=S.idmlBlocks;
     }
     else{ // both
-      setP(5,'Parsing IDML design tokens…');
+      setP(5,'Parsing IDML design tokens...');
       await parseIDML(S.idmlFile);
-      setP(12,'Rasterising PDF…');
+      setP(12,'Rasterising PDF...');
       await rasterisePDF(S.pdfFile);
-      setP(30,'Sending pages to Claude…');
+      setP(30,'Sending pages to Claude...');
       const res=await readPages(apiKey);
       for(const pg of res)if(pg.blocks)allBlocks=allBlocks.concat(pg.blocks);
     }
 
-    setP(90,'Building HTML & CSS…');
+    setP(90,'Building HTML & CSS...');
     S.finalBlocks=allBlocks;
     S.finalMeta=meta;
     S.finalHTML=await buildHTML(allBlocks,meta);
 
     setP(100,'✓ Done!');
-    log(`Done — ${allBlocks.length} blocks, ${S.imageAssets.length} WebP images`);
+    log(`Done -- ${allBlocks.length} blocks, ${S.imageAssets.length} WebP images`);
 
     // QA report
     buildQAReport(meta);
 
     // Update result panel
     const mL={pdf:'PDF-only',idml:'IDML-only',both:'PDF+IDML'};
-    document.getElementById('res-title').textContent=`Ch ${meta.num} — ${meta.title}`;
+    document.getElementById('res-title').textContent=`Ch ${meta.num} -- ${meta.title}`;
     document.getElementById('res-info').textContent=`[${mL[S.mode]}] ZIP ready: index.html + css/styles.css + js/chapter.js + ${S.imageAssets.length} figure placeholder(s) in img/ + _headers + data/`;
     document.getElementById('res-frame').src=URL.createObjectURL(new Blob([S.finalHTML],{type:'text/html'}));
 
@@ -2049,7 +2049,7 @@ async function run(){
     errEl.textContent='Error: '+e.message;
     errEl.classList.add('show');
     document.getElementById('btn-back4').disabled=false;
-    setP(0,'Error — see log above');
+    setP(0,'Error -- see log above');
   }
 }
 
@@ -2134,13 +2134,13 @@ async function dlZIP(){
   // js/chapter.js
   root.folder('js').file('chapter.js',S.finalJS||'');
 
-  // img/ — all WebP assets
+  // img/ -- all WebP assets
   const imgFolder=root.folder('img');
   for(const a of S.imageAssets){
     imgFolder.file(a.filename,a.blob);
   }
 
-  // fonts/ — placeholder (browser-side can't subset WOFF2)
+  // fonts/ -- placeholder (browser-side can't subset WOFF2)
   root.folder('fonts').file('README.txt',
 `# fonts/
 # This folder is reserved for WOFF2 font subsets.
@@ -2148,12 +2148,12 @@ async function dlZIP(){
 # If the chapter uses a custom typeface:
 #   1. Extract via fonttools: python -m fonttools subset font.ttf --output-file=fonts/name.woff2 --flavor=woff2 --layout-features='*' --text-file=glyphs.txt
 #   2. Add @font-face to css/styles.css
-# Body text uses Times New Roman (system font) — no embedding needed.
+# Body text uses Times New Roman (system font) -- no embedding needed.
 `);
 
-  // _headers — cache rules (Cloudflare Pages / Netlify)
+  // _headers -- cache rules (Cloudflare Pages / Netlify)
   root.file('_headers',
-`# _headers — Cloudflare Pages / Netlify cache rules
+`# _headers -- Cloudflare Pages / Netlify cache rules
 # GitHub Pages ignores this file. Use Cloudflare CDN proxy to activate.
 
 /*.html
@@ -2187,7 +2187,7 @@ async function dlZIP(){
   dataFolder.file('qa-report.json',JSON.stringify(S.qaReport||{},null,2));
 
   // Generate and download
-  toast('Generating ZIP…');
+  toast('Generating ZIP...');
   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -2203,7 +2203,7 @@ async function cpHTML(){
     await navigator.clipboard.writeText(S.finalHTML);
     toast('✓ Copied index.html to clipboard!');
   }catch{
-    toast('Clipboard not available — use Download ZIP');
+    toast('Clipboard not available -- use Download ZIP');
   }
 }
 
@@ -2226,7 +2226,7 @@ function startOver(){
   document.getElementById('btn-4').disabled=true;
   document.getElementById('err-box').classList.remove('show');
   const qg=document.getElementById('qa-grid');if(qg)qg.style.display='none';
-  setP(0,'Initialising…');
+  setP(0,'Initialising...');
   goStep(1);
 }
 
