@@ -952,7 +952,7 @@ function goStep(n){
     document.getElementById('key-needed-block').style.display=need?'block':'none';
     document.getElementById('key-skip-block').style.display=need?'none':'block';
   }
-  if(n===3){updateThemePreview();extractMetaFromPDF();}
+  if(n===3){updateThemePreview();extractMetaFromPDF();checkStep3Ready();}
   // Scroll to top
   window.scrollTo(0,0);
 }
@@ -964,38 +964,53 @@ function checkKey(){
 function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password'}
 
 function startConversion(){
-  // Guard: mode must be set
-  if(!S.mode){
-    toast('⚠ Please select PDF, IDML, or both first');
-    goStep(1);
-    return;
+  console.log('[NGMC] startConversion called. mode='+S.mode+' pdfFile='+!!S.pdfFile+' idmlFile='+!!S.idmlFile);
+
+  // Show error on step 3 panel instead of silent redirect
+  function err3(msg){
+    const b=document.getElementById('meta-extract-banner');
+    if(b){b.className='info err show';b.textContent='⚠ '+msg;b.style.display='block';}
+    toast('⚠ '+msg);
+    console.warn('[NGMC] startConversion blocked:',msg);
   }
-  // Guard: PDF mode needs a file
-  if((S.mode==='pdf'||S.mode==='both')&&!S.pdfFile){
-    toast('⚠ Please upload a PDF file');
-    goStep(1);
-    return;
-  }
-  // Guard: IDML mode needs a file
-  if((S.mode==='idml'||S.mode==='both')&&!S.idmlFile){
-    toast('⚠ Please upload an IDML file');
-    goStep(1);
-    return;
-  }
+
+  if(!S.mode){err3('Please select PDF, IDML, or PDF+IDML on step 1.');return;}
+  if((S.mode==='pdf'||S.mode==='both')&&!S.pdfFile){err3('Please upload a PDF file on step 1.');return;}
+  if((S.mode==='idml'||S.mode==='both')&&!S.idmlFile){err3('Please upload an IDML file on step 1.');return;}
+
   const p=document.getElementById('proxy-url')?.value.trim()||'';
   window.ANTHROPIC_PROXY=p||DEFAULT_PROXY;
-  const modeLabels={pdf:'📄 PDF-only — Claude reads each page visually',idml:'🎨 IDML-only — parsing InDesign styles and text',both:'📄+🎨 PDF+IDML — AI vision + exact design tokens'};
-  const banner=document.getElementById('mode-banner');
-  if(banner)banner.textContent=modeLabels[S.mode]||'Converting…';
+  console.log('[NGMC] proxy='+window.ANTHROPIC_PROXY);
+
+  // Navigate to step 4
   goStep(4);
-  // Small delay so panel-4 renders before we touch its elements
+
+  // Wait for panel to render then start
   setTimeout(()=>{
+    const banner=document.getElementById('mode-banner');
+    const modeLabels={pdf:'📄 PDF-only mode',idml:'🎨 IDML-only mode',both:'📄+🎨 PDF + IDML mode'};
+    if(banner)banner.textContent=modeLabels[S.mode]||'Converting…';
     const b4=document.getElementById('btn-back4');
     const b5=document.getElementById('btn-4');
     if(b4)b4.disabled=true;
     if(b5)b5.disabled=true;
+    console.log('[NGMC] Starting run()');
     run();
-  },50);
+  },80);
+}
+
+function checkStep3Ready(){
+  const ok = S.mode && 
+    ((S.mode==='pdf'&&S.pdfFile)||(S.mode==='idml'&&S.idmlFile)||(S.mode==='both'&&S.pdfFile&&S.idmlFile));
+  const btn = document.querySelector('#panel-3 .btn.pri');
+  if(btn) btn.disabled = !ok;
+  const banner = document.getElementById('meta-extract-banner');
+  if(banner && !ok && S.mode){
+    banner.className='info orange';
+    banner.style.display='block';
+    const missing = S.mode==='pdf'?'PDF':S.mode==='idml'?'IDML':'PDF and IDML';
+    banner.textContent='⚠ Go back to step 1 and upload your '+missing+' file.';
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
