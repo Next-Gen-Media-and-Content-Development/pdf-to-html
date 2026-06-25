@@ -572,20 +572,60 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
 <!-- STEP 2: API KEY -->
 <div class="panel" id="panel-2">
   <div class="inner">
-    <div class="panel-title">Connect Claude AI</div>
-    <p class="panel-sub">PDF modes use Claude's vision API to read each page in reading order. IDML-only mode skips this step.</p>
+    <div class="panel-title">Connect AI Provider</div>
+    <p class="panel-sub">PDF modes use AI vision to read each page in reading order. IDML-only mode skips this step.</p>
     <div id="key-needed-block">
-      <div class="key-box">
+      <!-- Provider selector -->
+      <div class="ff" style="margin-bottom:1rem">
+        <label>🤖 AI Provider</label>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.4rem">
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;font-size:.88rem;padding:.45rem .9rem;border:2px solid var(--brand);border-radius:7px;background:var(--brand-lite);color:var(--brand)">
+            <input type="radio" name="ai-provider" value="claude" checked onchange="switchProvider(this.value)" style="accent-color:var(--brand)"> Claude
+          </label>
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;font-size:.88rem;padding:.45rem .9rem;border:2px solid var(--border);border-radius:7px;background:var(--canvas)">
+            <input type="radio" name="ai-provider" value="gemini" onchange="switchProvider(this.value)" style="accent-color:#1a73e8"> Gemini
+          </label>
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:600;font-size:.88rem;padding:.45rem .9rem;border:2px solid var(--border);border-radius:7px;background:var(--canvas)">
+            <input type="radio" name="ai-provider" value="gpt" onchange="switchProvider(this.value)" style="accent-color:#10a37f"> GPT-4o
+          </label>
+        </div>
+      </div>
+
+      <!-- Claude key block -->
+      <div id="provider-claude" class="key-box">
         <h3>🔑 Anthropic API Key</h3>
-        <p>Key starts with <code>sk-ant-</code>. Used only to call Claude for page reading — never stored or sent elsewhere.</p>
+        <p>Key starts with <code>sk-ant-</code>. Never stored or sent elsewhere.</p>
         <div class="key-row">
           <input type="password" class="key-inp" id="api-key" placeholder="sk-ant-api03-…" oninput="checkKey()">
-          <button class="btn" onclick="toggleKey()">👁</button>
+          <button class="btn" onclick="toggleKey('api-key')">👁</button>
         </div>
         <div class="info err" id="key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>sk-ant-</code> and be at least 30 characters.</div>
       </div>
-      <div class="ff" style="margin-bottom:.85rem">
-        <label>Cloudflare Proxy URL <span style="font-weight:400;text-transform:none">(optional — paste if you use a CORS proxy)</span></label>
+
+      <!-- Gemini key block -->
+      <div id="provider-gemini" class="key-box" style="display:none">
+        <h3>🔑 Google Gemini API Key</h3>
+        <p>Key starts with <code>AIza</code>. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>.</p>
+        <div class="key-row">
+          <input type="password" class="key-inp" id="gemini-key" placeholder="AIzaSy…" oninput="checkKey()">
+          <button class="btn" onclick="toggleKey('gemini-key')">👁</button>
+        </div>
+        <div class="info err" id="gemini-key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>AIza</code> and be at least 20 characters.</div>
+      </div>
+
+      <!-- GPT key block -->
+      <div id="provider-gpt" class="key-box" style="display:none">
+        <h3>🔑 OpenAI API Key</h3>
+        <p>Key starts with <code>sk-</code>. Get your key at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>.</p>
+        <div class="key-row">
+          <input type="password" class="key-inp" id="gpt-key" placeholder="sk-…" oninput="checkKey()">
+          <button class="btn" onclick="toggleKey('gpt-key')">👁</button>
+        </div>
+        <div class="info err" id="gpt-key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>sk-</code> and be at least 30 characters.</div>
+      </div>
+
+      <div class="ff" style="margin-bottom:.85rem;margin-top:.85rem" id="proxy-row">
+        <label>Cloudflare Proxy URL <span style="font-weight:400;text-transform:none">(optional — only needed for Claude CORS proxy)</span></label>
         <input type="text" id="proxy-url" placeholder="https://wispy-sound-1236.shikhakaushik641.workers.dev/">
       </div>
     </div>
@@ -836,7 +876,7 @@ function handleF(f,type){
 async function extractMetaFromPDF(){
   if(!S._pendingMetaExtract||!S.pdfFile)return;
   if(S.mode==='idml')return; // no API call needed
-  const apiKey=document.getElementById('api-key').value.trim();
+  const apiKey=getActiveKey();
   const proxy=document.getElementById('proxy-url').value.trim();
   if(!apiKey&&!proxy)return;
   S._pendingMetaExtract=false;
@@ -862,15 +902,7 @@ async function extractMetaFromPDF(){
     const dataUrl=await blobToDataURL(webp);
     const b64=dataURLToBase64(dataUrl);
 
-    const endpoint=proxy||DEFAULT_PROXY;
-    const headers={'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':apiKey};
-
-    const r=await fetch(endpoint,{
-      method:'POST',headers,
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:512,
-        system:`You extract chapter metadata from a textbook cover or first page.
+    const metaSYS=`You extract chapter metadata from a textbook cover or first page.
 Return ONLY valid JSON -- no markdown, no explanation:
 {
   "chapterNum": <integer or null>,
@@ -883,17 +915,14 @@ Rules:
 - chapterTitle: remove any "Chapter N" prefix. Give only the actual title text.
 - grade: look for "Grade", "Class", "Std" anywhere on the page. If not visible, return null.
 - bookTitle: the series/book name (e.g. "Exploration", "Contemporary India", "NCERT Science"). If not found, return null.
-- Never guess or invent. Return null for fields not clearly visible on this page.`,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:'image/webp',data:b64}},
-          {type:'text',text:'Extract chapter metadata from this page. Return JSON only.'}
-        ]}]
-      })
-    });
+- Never guess or invent. Return null for fields not clearly visible on this page.`;
 
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    const raw=(d.content?.[0]?.text||'{}').replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const rawText=await callVisionAPI(
+      getProvider(), apiKey, proxy||DEFAULT_PROXY,
+      metaSYS, 'Extract chapter metadata from this page. Return JSON only.',
+      b64, 'image/webp'
+    );
+    const raw=rawText.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
     let meta;
     try{meta=JSON.parse(raw)}catch{const m=raw.match(/\{[\s\S]*\}/);meta=m?JSON.parse(m[0]):{};}
 
@@ -930,14 +959,22 @@ function fmtSz(b){return b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed
 function goStep(n){
   // API key validation for PDF modes
   if(n===3&&S.mode!=='idml'){
-    const k=document.getElementById('api-key')?.value.trim()||'';
+    const p=getProvider();
     const proxy=document.getElementById('proxy-url')?.value.trim()||DEFAULT_PROXY;
     const proxyOk=proxy&&proxy.startsWith('http');
-    const keyOk=k.startsWith('sk-ant-')&&k.length>30;
-    if(!proxyOk&&!keyOk){
-      const errEl=document.getElementById('key-err');
-      if(errEl)errEl.classList.add('show');
-      return;
+    let keyOk=false;
+    if(p==='claude'){
+      const k=document.getElementById('api-key')?.value.trim()||'';
+      keyOk=k.startsWith('sk-ant-')&&k.length>30;
+      if(!proxyOk&&!keyOk){document.getElementById('key-err').classList.add('show');return;}
+    } else if(p==='gemini'){
+      const k=document.getElementById('gemini-key')?.value.trim()||'';
+      keyOk=k.startsWith('AIza')&&k.length>20;
+      if(!keyOk){document.getElementById('gemini-key-err').classList.add('show');return;}
+    } else {
+      const k=document.getElementById('gpt-key')?.value.trim()||'';
+      keyOk=k.startsWith('sk-')&&k.length>30;
+      if(!keyOk){document.getElementById('gpt-key-err').classList.add('show');return;}
     }
   }
     [1,2,3,4,5].forEach(i=>{
@@ -956,12 +993,33 @@ function goStep(n){
   // Scroll to top
   window.scrollTo(0,0);
 }
-function checkKey(){
-  const k=document.getElementById('api-key').value.trim();
-  document.getElementById('api-key').classList.toggle('valid',k.startsWith('sk-ant-')&&k.length>30);
-  document.getElementById('key-err').classList.remove('show');
+function getProvider(){
+  return (document.querySelector('input[name="ai-provider"]:checked')||{value:'claude'}).value;
 }
-function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password'}
+function switchProvider(p){
+  document.getElementById('provider-claude').style.display=p==='claude'?'block':'none';
+  document.getElementById('provider-gemini').style.display=p==='gemini'?'block':'none';
+  document.getElementById('provider-gpt').style.display=p==='gpt'?'block':'none';
+  document.getElementById('proxy-row').style.display=p==='claude'?'block':'none';
+  checkKey();
+}
+function checkKey(){
+  const p=getProvider();
+  if(p==='claude'){
+    const k=document.getElementById('api-key').value.trim();
+    document.getElementById('api-key').classList.toggle('valid',k.startsWith('sk-ant-')&&k.length>30);
+    document.getElementById('key-err').classList.remove('show');
+  } else if(p==='gemini'){
+    const k=document.getElementById('gemini-key').value.trim();
+    document.getElementById('gemini-key').classList.toggle('valid',k.startsWith('AIza')&&k.length>20);
+    document.getElementById('gemini-key-err').classList.remove('show');
+  } else {
+    const k=document.getElementById('gpt-key').value.trim();
+    document.getElementById('gpt-key').classList.toggle('valid',k.startsWith('sk-')&&k.length>30);
+    document.getElementById('gpt-key-err').classList.remove('show');
+  }
+}
+function toggleKey(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password'}
 
 function startConversion(){
   console.log('[NGMC] startConversion called. mode='+S.mode+' pdfFile='+!!S.pdfFile+' idmlFile='+!!S.idmlFile);
@@ -1155,7 +1213,66 @@ async function rasterisePDF(file){
 }
 
 /* ─────────────────────────────────────────────────────────────
-   CLAUDE PAGE READING
+   PROVIDER HELPERS
+───────────────────────────────────────────────────────────── */
+function getActiveKey(){
+  const p=getProvider();
+  if(p==='gemini') return document.getElementById('gemini-key').value.trim();
+  if(p==='gpt')    return document.getElementById('gpt-key').value.trim();
+  return document.getElementById('api-key').value.trim();
+}
+
+async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, mediaType){
+  if(provider==='gemini'){
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      contents:[{parts:[
+        {inline_data:{mime_type:mediaType,data:b64}},
+        {text:systemPrompt+'\n\n'+userText}
+      ]}],
+      generationConfig:{maxOutputTokens:4096}
+    })});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'Gemini HTTP '+r.status);}
+    const d=await r.json();
+    return (d.candidates?.[0]?.content?.parts?.[0]?.text||'{}');
+  }
+  if(provider==='gpt'){
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model:'gpt-4o',max_tokens:4096,
+        messages:[
+          {role:'system',content:systemPrompt},
+          {role:'user',content:[
+            {type:'image_url',image_url:{url:'data:'+mediaType+';base64,'+b64}},
+            {type:'text',text:userText}
+          ]}
+        ]
+      })
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'OpenAI HTTP '+r.status);}
+    const d=await r.json();
+    return (d.choices?.[0]?.message?.content||'{}');
+  }
+  // Claude (default)
+  const endpoint=proxy||DEFAULT_PROXY;
+  const r=await fetch(endpoint,{method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':key},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',max_tokens:4096,system:systemPrompt,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+        {type:'text',text:userText}
+      ]}]
+    })
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+r.status);}
+  const d=await r.json();
+  return (d.content?.[0]?.text||'{}');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   AI PAGE READING
 ───────────────────────────────────────────────────────────── */
 async function readPages(apiKey){
   const N=S.pages.length,results=[];
@@ -1195,31 +1312,17 @@ Return ONLY valid JSON (no markdown fences):
   for(let i=0;i<N;i++){
     const pg=S.pages[i];
     document.getElementById('th-'+pg.pageNum)?.classList.add('proc');
-    setP(30+(i/N)*55,`Claude reading page ${pg.pageNum}/${N}...`);
+    const provider=getProvider();
+    const providerLabel=provider==='gemini'?'Gemini':provider==='gpt'?'GPT-4o':'Claude';
+    setP(30+(i/N)*55,`${providerLabel} reading page ${pg.pageNum}/${N}...`);
     try{
       const PROXY=window.ANTHROPIC_PROXY||DEFAULT_PROXY;
-      const endpoint=PROXY;
-      const headers={'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':apiKey};
-
-      const r=await fetch(endpoint,{
-        method:'POST',
-        headers,
-        body:JSON.stringify({
-          model:'claude-sonnet-4-6',
-          max_tokens:4096,
-          system:SYS,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:pg.mediaType,data:pg.b64}},
-            {type:'text',text:`Page ${pg.pageNum} of ${N}. Extract ALL content blocks as JSON. Be exhaustive -- nothing should be missing.`}
-          ]}]
-        })
-      });
-      if(!r.ok){
-        const e=await r.json().catch(()=>({}));
-        throw new Error(e?.error?.message||'HTTP '+r.status);
-      }
-      const d=await r.json();
-      const raw=(d.content?.[0]?.text||'{}').replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+      const rawText=await callVisionAPI(
+        provider, apiKey, PROXY, SYS,
+        `Page ${pg.pageNum} of ${N}. Extract ALL content blocks as JSON. Be exhaustive -- nothing should be missing.`,
+        pg.b64, pg.mediaType
+      );
+      const raw=rawText.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
       let parsed;
       try{parsed=JSON.parse(raw)}
       catch{
@@ -2065,7 +2168,7 @@ async function run(){
     subject:document.getElementById('ch-subject').value||'Science',
     book:document.getElementById('ch-book').value||'Book'
   };
-  const apiKey=document.getElementById('api-key').value.trim();
+  const apiKey=getActiveKey();
   const errEl=document.getElementById('err-box');
   errEl.classList.remove('show');
 
@@ -2076,7 +2179,8 @@ async function run(){
     if(S.mode==='pdf'){
       setP(5,'Rasterising PDF...');
       await rasterisePDF(S.pdfFile);
-      setP(30,'Sending pages to Claude...');
+      const pl=getProvider()==='gemini'?'Gemini':getProvider()==='gpt'?'GPT-4o':'Claude';
+      setP(30,`Sending pages to ${pl}...`);
       const res=await readPages(apiKey);
       for(const pg of res)if(pg.blocks)allBlocks=allBlocks.concat(pg.blocks);
     }
@@ -2091,7 +2195,8 @@ async function run(){
       await parseIDML(S.idmlFile);
       setP(12,'Rasterising PDF...');
       await rasterisePDF(S.pdfFile);
-      setP(30,'Sending pages to Claude...');
+      const pl2=getProvider()==='gemini'?'Gemini':getProvider()==='gpt'?'GPT-4o':'Claude';
+      setP(30,`Sending pages to ${pl2}...`);
       const res=await readPages(apiKey);
       for(const pg of res)if(pg.blocks)allBlocks=allBlocks.concat(pg.blocks);
     }
