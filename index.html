@@ -1224,17 +1224,32 @@ function getActiveKey(){
 
 async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, mediaType){
   if(provider==='gemini'){
-    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    const body=JSON.stringify({
       contents:[{parts:[
         {inline_data:{mime_type:mediaType,data:b64}},
         {text:systemPrompt+'\n\n'+userText}
       ]}],
       generationConfig:{maxOutputTokens:4096}
-    })});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'Gemini HTTP '+r.status);}
-    const d=await r.json();
-    return (d.candidates?.[0]?.content?.parts?.[0]?.text||'{}');
+    });
+    // Retry up to 4 times on 429 rate-limit, honouring Gemini's retryDelay
+    for(let attempt=0;attempt<4;attempt++){
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body});
+      if(r.status===429){
+        const e=await r.json().catch(()=>({}));
+        const msg=e?.error?.message||'';
+        // Parse "Please retry in Xs" from message
+        const m=msg.match(/retry in ([\d.]+)s/i);
+        const wait=m?Math.ceil(parseFloat(m[1]))*1000+500:15000;
+        log(`⏳ Gemini rate limit — waiting ${Math.round(wait/1000)}s before retry (attempt ${attempt+1}/4)...`);
+        await new Promise(res=>setTimeout(res,wait));
+        continue;
+      }
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'Gemini HTTP '+r.status);}
+      const d=await r.json();
+      return (d.candidates?.[0]?.content?.parts?.[0]?.text||'{}');
+    }
+    throw new Error('Gemini rate limit exceeded after 4 retries. Try again in a minute or switch to Claude/GPT-4o.');
   }
   if(provider==='gpt'){
     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
