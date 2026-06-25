@@ -622,9 +622,9 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
           <button class="btn" onclick="toggleKey('gpt-key')">👁</button>
         </div>
         <div class="info err" id="gpt-key-err" style="margin-top:.5rem;margin-bottom:0">API key must be at least 20 characters.</div>
-        <details style="margin-top:.85rem">
-          <summary style="cursor:pointer;font-size:.82rem;font-weight:600;color:#555">⚙️ Azure OpenAI settings (optional)</summary>
-          <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.5rem">
+        <div style="margin-top:.85rem;border:1px solid #d0d0d0;border-radius:8px;padding:.75rem 1rem;background:#f8f8f8">
+          <div style="font-size:.82rem;font-weight:700;color:#333;margin-bottom:.6rem">⚙️ Azure OpenAI Settings <span style="font-weight:400;color:#888">(leave blank to use standard OpenAI)</span></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
             <div class="ff" style="margin-bottom:0">
               <label>Azure Endpoint</label>
               <input type="text" id="azure-endpoint" placeholder="https://YOUR-RESOURCE.openai.azure.com/" style="width:100%">
@@ -638,7 +638,7 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
               <input type="text" id="azure-api-version" value="2024-02-01">
             </div>
           </div>
-        </details>
+        </div>
       </div>
 
       <div class="ff" style="margin-bottom:.85rem;margin-top:.85rem" id="proxy-row">
