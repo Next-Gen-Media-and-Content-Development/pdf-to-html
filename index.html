@@ -613,15 +613,32 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
         <div class="info err" id="gemini-key-err" style="margin-top:.5rem;margin-bottom:0">Key must be at least 20 characters.</div>
       </div>
 
-      <!-- GPT key block -->
+      <!-- GPT / Azure key block -->
       <div id="provider-gpt" class="key-box" style="display:none">
-        <h3>🔑 OpenAI API Key</h3>
-        <p>Key starts with <code>sk-</code>. Get your key at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a>.</p>
+        <h3>🔑 OpenAI / Azure API Key</h3>
+        <p>Paste your OpenAI key (<code>sk-…</code>) or your Azure OpenAI key. Never stored or sent elsewhere.</p>
         <div class="key-row">
-          <input type="password" class="key-inp" id="gpt-key" placeholder="sk-…" oninput="checkKey()">
+          <input type="password" class="key-inp" id="gpt-key" placeholder="Paste OpenAI or Azure key…" oninput="checkKey()">
           <button class="btn" onclick="toggleKey('gpt-key')">👁</button>
         </div>
-        <div class="info err" id="gpt-key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>sk-</code> and be at least 30 characters.</div>
+        <div class="info err" id="gpt-key-err" style="margin-top:.5rem;margin-bottom:0">API key must be at least 20 characters.</div>
+        <details style="margin-top:.85rem">
+          <summary style="cursor:pointer;font-size:.82rem;font-weight:600;color:#555">⚙️ Azure OpenAI settings (optional)</summary>
+          <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.5rem">
+            <div class="ff" style="margin-bottom:0">
+              <label>Azure Endpoint</label>
+              <input type="text" id="azure-endpoint" placeholder="https://YOUR-RESOURCE.openai.azure.com/" style="width:100%">
+            </div>
+            <div class="ff" style="margin-bottom:0">
+              <label>Deployment Name</label>
+              <input type="text" id="azure-deployment" placeholder="e.g. gpt-5-2-ngmc">
+            </div>
+            <div class="ff" style="margin-bottom:0">
+              <label>API Version</label>
+              <input type="text" id="azure-api-version" value="2024-02-01">
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="ff" style="margin-bottom:.85rem;margin-top:.85rem" id="proxy-row">
@@ -973,7 +990,7 @@ function goStep(n){
       if(!keyOk){document.getElementById('gemini-key-err').classList.add('show');return;}
     } else {
       const k=document.getElementById('gpt-key')?.value.trim()||'';
-      keyOk=k.startsWith('sk-')&&k.length>30;
+      keyOk=k.length>20;
       if(!keyOk){document.getElementById('gpt-key-err').classList.add('show');return;}
     }
   }
@@ -1015,7 +1032,7 @@ function checkKey(){
     document.getElementById('gemini-key-err').classList.remove('show');
   } else {
     const k=document.getElementById('gpt-key').value.trim();
-    document.getElementById('gpt-key').classList.toggle('valid',k.startsWith('sk-')&&k.length>30);
+    document.getElementById('gpt-key').classList.toggle('valid',k.length>20);
     document.getElementById('gpt-key-err').classList.remove('show');
   }
 }
@@ -1252,9 +1269,30 @@ async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, 
     throw new Error('Gemini rate limit exceeded after 4 retries. Try again in a minute or switch to Claude/GPT-4o.');
   }
   if(provider==='gpt'){
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({
+    const azureEndpoint=(document.getElementById('azure-endpoint')?.value||'').trim().replace(/^["']|["']$/g,'');
+    const azureDeployment=(document.getElementById('azure-deployment')?.value||'').trim().replace(/^["']|["']$/g,'');
+    const azureVersion=(document.getElementById('azure-api-version')?.value||'2024-02-01').trim().replace(/^["']|["']$/g,'');
+    let endpoint,headers,body;
+    if(azureEndpoint){
+      // Azure OpenAI
+      const deploy=azureDeployment||'gpt-4o';
+      endpoint=`${azureEndpoint.replace(/\/$/,'')}/openai/deployments/${deploy}/chat/completions?api-version=${azureVersion}`;
+      headers={'Content-Type':'application/json','api-key':key};
+      body=JSON.stringify({
+        max_completion_tokens:4096,
+        messages:[
+          {role:'system',content:systemPrompt},
+          {role:'user',content:[
+            {type:'image_url',image_url:{url:'data:'+mediaType+';base64,'+b64}},
+            {type:'text',text:userText}
+          ]}
+        ]
+      });
+    } else {
+      // Standard OpenAI
+      endpoint='https://api.openai.com/v1/chat/completions';
+      headers={'Content-Type':'application/json','Authorization':'Bearer '+key};
+      body=JSON.stringify({
         model:'gpt-4o',max_tokens:4096,
         messages:[
           {role:'system',content:systemPrompt},
@@ -1263,9 +1301,10 @@ async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, 
             {type:'text',text:userText}
           ]}
         ]
-      })
-    });
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'OpenAI HTTP '+r.status);}
+      });
+    }
+    const r=await fetch(endpoint,{method:'POST',headers,body});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'OpenAI/Azure HTTP '+r.status);}
     const d=await r.json();
     return (d.choices?.[0]?.message?.content||'{}');
   }
@@ -1328,7 +1367,7 @@ Return ONLY valid JSON (no markdown fences):
     const pg=S.pages[i];
     document.getElementById('th-'+pg.pageNum)?.classList.add('proc');
     const provider=getProvider();
-    const providerLabel=provider==='gemini'?'Gemini':provider==='gpt'?'GPT-4o':'Claude';
+    const providerLabel=provider==='gemini'?'Gemini':provider==='gpt'?'GPT / Azure':'Claude';
     setP(30+(i/N)*55,`${providerLabel} reading page ${pg.pageNum}/${N}...`);
     try{
       const PROXY=window.ANTHROPIC_PROXY||DEFAULT_PROXY;
