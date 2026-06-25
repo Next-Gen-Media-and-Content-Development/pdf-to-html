@@ -1307,10 +1307,20 @@ async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, 
         ]
       });
     }
-    const r=await fetch(endpoint,{method:'POST',headers,body});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'OpenAI/Azure HTTP '+r.status);}
-    const d=await r.json();
-    return (d.choices?.[0]?.message?.content||'{}');
+    // Retry up to 4 times on 429 rate limit
+    for(let attempt=0;attempt<4;attempt++){
+      const r=await fetch(endpoint,{method:'POST',headers,body});
+      if(r.status===429){
+        let wait=15000; // default 15s
+        try{const errBody=await r.json();const msg=errBody?.error?.message||'';const m=msg.match(/retry after (\d+)/i);if(m)wait=(parseInt(m[1])+1)*1000;}catch{}
+        if(attempt<3){await new Promise(res=>setTimeout(res,wait));continue;}
+        throw new Error('Azure rate limit exceeded after 4 retries. Wait a minute and try again.');
+      }
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'OpenAI/Azure HTTP '+r.status);}
+      const d=await r.json();
+      return (d.choices?.[0]?.message?.content||'{}');
+    }
+    throw new Error('Azure: max retries reached');
   }
   // Claude (default)
   const endpoint=proxy||DEFAULT_PROXY;
