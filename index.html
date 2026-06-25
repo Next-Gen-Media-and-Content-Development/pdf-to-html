@@ -1272,13 +1272,17 @@ async function callVisionAPI(provider, key, proxy, systemPrompt, userText, b64, 
     const azureEndpoint=(document.getElementById('azure-endpoint')?.value||'').trim().replace(/^["']|["']$/g,'');
     const azureDeployment=(document.getElementById('azure-deployment')?.value||'').trim().replace(/^["']|["']$/g,'');
     const azureVersion=(document.getElementById('azure-api-version')?.value||'2024-02-01').trim().replace(/^["']|["']$/g,'');
+    const AZURE_PROXY='https://azure-openai-proxy.shikhakaushik641.workers.dev';
     let endpoint,headers,body;
     if(azureEndpoint){
-      // Azure OpenAI
-      const deploy=azureDeployment||'gpt-4o';
-      endpoint=`${azureEndpoint.replace(/\/$/,'')}/openai/deployments/${deploy}/chat/completions?api-version=${azureVersion}`;
-      headers={'Content-Type':'application/json','api-key':key};
+      // Route through Cloudflare Worker to avoid CORS
+      endpoint=AZURE_PROXY;
+      headers={'Content-Type':'application/json'};
       body=JSON.stringify({
+        azureEndpoint,
+        azureDeployment:azureDeployment||'gpt-4o',
+        azureApiVersion:azureVersion,
+        apiKey:key,
         max_completion_tokens:4096,
         messages:[
           {role:'system',content:systemPrompt},
