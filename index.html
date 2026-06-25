@@ -605,12 +605,12 @@ LCP &lt; <span class="str">2.5s</span> · Initial &lt; <span class="str">1 MB</s
       <!-- Gemini key block -->
       <div id="provider-gemini" class="key-box" style="display:none">
         <h3>🔑 Google Gemini API Key</h3>
-        <p>Key starts with <code>AIza</code>. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>.</p>
+        <p>Paste your Google AI Studio API key. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>.</p>
         <div class="key-row">
-          <input type="password" class="key-inp" id="gemini-key" placeholder="AIzaSy…" oninput="checkKey()">
+          <input type="password" class="key-inp" id="gemini-key" placeholder="Paste Gemini API key…" oninput="checkKey()">
           <button class="btn" onclick="toggleKey('gemini-key')">👁</button>
         </div>
-        <div class="info err" id="gemini-key-err" style="margin-top:.5rem;margin-bottom:0">Key must start with <code>AIza</code> and be at least 20 characters.</div>
+        <div class="info err" id="gemini-key-err" style="margin-top:.5rem;margin-bottom:0">Key must be at least 20 characters.</div>
       </div>
 
       <!-- GPT key block -->
@@ -969,7 +969,7 @@ function goStep(n){
       if(!proxyOk&&!keyOk){document.getElementById('key-err').classList.add('show');return;}
     } else if(p==='gemini'){
       const k=document.getElementById('gemini-key')?.value.trim()||'';
-      keyOk=k.startsWith('AIza')&&k.length>20;
+      keyOk=k.length>20;
       if(!keyOk){document.getElementById('gemini-key-err').classList.add('show');return;}
     } else {
       const k=document.getElementById('gpt-key')?.value.trim()||'';
@@ -1011,7 +1011,7 @@ function checkKey(){
     document.getElementById('key-err').classList.remove('show');
   } else if(p==='gemini'){
     const k=document.getElementById('gemini-key').value.trim();
-    document.getElementById('gemini-key').classList.toggle('valid',k.startsWith('AIza')&&k.length>20);
+    document.getElementById('gemini-key').classList.toggle('valid',k.length>20);
     document.getElementById('gemini-key-err').classList.remove('show');
   } else {
     const k=document.getElementById('gpt-key').value.trim();
